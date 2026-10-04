@@ -57,6 +57,24 @@ public class StopAimerTests
     }
 
     /// <summary>
+    /// With the stop's radius taken from the real axial marginal ray, aiming on axis changes
+    /// nothing: the ray aimed at the stop's rim is the one launched at the rim of the paraxial
+    /// entrance pupil. (Zemax OpticStudio's real ray aiming behaves so; its stop radius on the
+    /// double Gauss is 5.1467147 mm, against the paraxial 5.1507.)
+    /// </summary>
+    [Fact]
+    public void WithTheRealAxialRadiusAnAxialRayIsUnaimed()
+    {
+        var (system, n, p, _) = DoubleGauss();
+        var aimer = StopAimer.ForSystem(system, n, p, stopHeight: StopAimer.RealAxialHeight(system, n, p));
+        Assert.Equal(5.1467147, aimer.StopHeight, 6);
+        var (py, pz) = aimer.Launch(0.0, 1.0, 0.0)!.Value;
+        Assert.Equal(1.0, py, 8);
+        Assert.Equal(0.0, pz, 12);
+        Assert.NotEqual(aimer.StopHeight, StopAimer.ForSystem(system, n, p).StopHeight, 4);
+    }
+
+    /// <summary>
     /// At full field the double Gauss's chief ray, launched through the centre of the paraxial
     /// entrance pupil, misses the centre of its stop - which is what makes aiming worth having.
     /// The aimer's chief ray starts elsewhere.
