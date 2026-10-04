@@ -166,7 +166,16 @@ public static class RealRayTrace
         // Slide along that line from the object to surface one's vertex plane. The fraction is
         // the same in every coordinate, the line being straight.
         Scalar fraction = SMath.Abs(span) > 1e-14 ? distance / span : 0.0;
-        return (fraction * dx, height + fraction * dy, dx, dy, dz);
+        Scalar x1 = fraction * dx, y1 = height + fraction * dy;
+
+        // The light leaves the object towards the lens whatever side of the object the pupil is
+        // on. A virtual entrance pupil can lie BEHIND the object - a lens whose stop is imaged
+        // back past it - and then the object-to-pupil direction points away from the lens: the
+        // ray would be traced along the right line but backwards, every transfer a negative
+        // distance, and its optical path, so its wavefront, negated. The pupil's own radius is
+        // then negative too (the paraxial EPD carries the sign), so +py is still the upper rim.
+        if (span < 0.0) { dx = -dx; dy = -dy; dz = -dz; }
+        return (x1, y1, dx, dy, dz);
     }
 
     /// <summary>

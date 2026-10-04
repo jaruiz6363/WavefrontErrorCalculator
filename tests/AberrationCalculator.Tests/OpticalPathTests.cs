@@ -140,4 +140,38 @@ public class OpticalPathTests
         var (_, with) = Trace(sys, n, p, 0.0, 0.8, 0.1);
         Assert.Equal(without, with);
     }
+    /// <summary>
+    /// A virtual entrance pupil BEHIND the object: a positive lens with its stop beyond its focal
+    /// length images the stop back past an object close in front of it. The light still leaves
+    /// the object towards the lens, so every ray's optical path from the object is positive - the
+    /// axial ray's is the sum of index times thickness from surface 1 - and rays above the axis in the pupil go
+    /// up. (A launch that went from the object towards that pupil traced each ray backwards and
+    /// negated every path.)
+    /// </summary>
+    [Fact]
+    public void AnEntrancePupilBehindTheObjectStillSendsTheLightForward()
+    {
+        var sys = new OpticalSystem { Aperture = new Aperture(ApertureType.ObjectSpaceNA, 0.1) };
+        sys.Wavelengths.Add(new Wavelength(0.5875618, 1.0, true));
+        sys.Fields.Add(new Field(0.0));
+        sys.Surfaces.Add(new Surface { Index = 0, Thickness = 20.0 });
+        sys.Surfaces.Add(new Surface { Index = 1, Curvature = 1.0 / 50.0, Thickness = 5.0, Material = "N-BK7" });
+        sys.Surfaces.Add(new Surface { Index = 2, Curvature = -1.0 / 50.0, Thickness = 60.0 });
+        sys.Surfaces.Add(new Surface { Index = 3, Thickness = 40.0, IsStop = true });
+        sys.Surfaces.Add(new Surface { Index = 4 });
+        var n = IndexResolver.Build(sys, CatalogLocator.LoadBundled(), 0.5875618);
+        var p = ParaxialTrace.Trace(sys, n, 0.0);
+        Assert.True(p.EntrancePupilPosition < -20.0, $"the entrance pupil is at {p.EntrancePupilPosition}, not behind the object");
+
+        var path = new double[sys.Surfaces.Count];
+        var axial = RealRayTrace.TraceRecord(sys, n, p, 0.0, 0.0, 0.0, atParaxialFocus: false, null, null, path);
+        Assert.True(axial[4].Ok);
+        // The trace's path starts on surface 1's vertex plane, which the axial ray meets at the vertex.
+        Assert.Equal(n[1] * 5.0 + 60.0 + 40.0, path[4], 9);
+
+        var upper = RealRayTrace.TraceRecord(sys, n, p, 0.0, 1.0, 0.0, atParaxialFocus: false);
+        Assert.True(upper[1].Ok);
+        Assert.True(upper[1].Y > 0.0, $"the upper rim ray meets the lens at y = {upper[1].Y}");
+        Assert.True(upper[1].N > 0.0);
+    }
 }
