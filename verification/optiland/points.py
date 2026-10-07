@@ -9,7 +9,8 @@ each of its wavelengths (the medium after each surface), in place of Optiland's 
 with Zemax's file, Optiland traces on exactly the AGF catalog values OpticStudio used.
 
 points.json lists {"set", "px", "py"} under "points" (the sets "map" and "rim" become the result's
-map and a set of that name). For every field and wavelength, Optiland's Wavefront with strategy
+map and a set of that name). It can also be any file in the result format, such as
+tests/TestData/zemax-opdc/<lens>_OPDC_Off.json: its first field's map and fans are the points. For every field and wavelength, Optiland's Wavefront with strategy
 "chief_ray", its default, is evaluated on exactly those normalised pupil points: each ray's OPD in
 waves against its own wavelength's chief ray. A ray Optiland gives no intensity is vignetted.
 As in export.py, every iteratively intersected surface has its tolerance tightened to 1e-14 mm.
@@ -17,6 +18,7 @@ As in export.py, every iteratively intersected surface has its tolerance tighten
 
 from __future__ import annotations
 
+import importlib.metadata
 import json
 import sys
 import warnings
@@ -80,6 +82,25 @@ class GivenDistribution(BaseDistribution):
         pass
 
 
+def read_points(path: str) -> list[dict]:
+    """The points of a points file, or of a result file's first field (its map and fans)."""
+    with open(path, encoding="utf-8") as fh:
+        data = json.load(fh)
+    if "points" in data:
+        return data["points"]
+    field = data["wavelengths"][0]["fields"][0]
+    sets = ([("map", field["map"])] if "map" in field else []) + list(field.get("fans", {}).items())
+    return [{"set": name, "px": x, "py": y} for name, rays in sets for x, y in zip(rays["px"], rays["py"])]
+
+
+def optiland_version() -> str:
+    """The installed Optiland's version, as its package metadata gives it."""
+    try:
+        return importlib.metadata.version("optiland")
+    except importlib.metadata.PackageNotFoundError:
+        return "unknown"
+
+
 def main(lens: str, points_path: str, out: str, indices: str | None = None) -> None:
     warnings.simplefilter("ignore")
     optic = load_zemax_file(lens)
@@ -92,8 +113,7 @@ def main(lens: str, points_path: str, out: str, indices: str | None = None) -> N
             if hasattr(geometry, "max_iter"):
                 geometry.max_iter = 10000
 
-    with open(points_path, encoding="utf-8") as fh:
-        points = json.load(fh)["points"]
+    points = read_points(points_path)
     sets = sorted({p["set"] for p in points}, key=lambda s: (s != "map", s))
     px = [p["px"] for p in points]
     py = [p["py"] for p in points]
@@ -136,7 +156,7 @@ def main(lens: str, points_path: str, out: str, indices: str | None = None) -> N
     result = {
         "format": "wavefront-result/1",
         "program": "Optiland",
-        "version": "a3fb3e1b",
+        "version": optiland_version(),
         "lens": lens.replace("\\", "/").rsplit("/", 1)[-1],
         "settings": {
             "strategy": "chief_ray",
