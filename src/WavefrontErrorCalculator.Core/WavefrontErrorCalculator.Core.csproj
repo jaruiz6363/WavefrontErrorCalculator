@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>WavefrontErrorCalculator.Core</RootNamespace>
+    <AssemblyName>WavefrontErrorCalculator.Core</AssemblyName>
+  </PropertyGroup>
+
+  <!-- The optics - lens model, readers for every format, glass, the paraxial trace, the real ray
+       trace with its optical path, and ray aiming at the stop - are AberrationCalculator's, from
+       external/AberrationCalculator. WavefrontErrorCalculator adds the wavefront: the reference
+       spheres, the pupil coordinates, and every convention for turning optical paths into an
+       aberration. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\external\AberrationCalculator\src\AberrationCalculator.Core\AberrationCalculator.Core.csproj" />
+    <ProjectReference Include="..\..\external\AberrationCalculator\src\AberrationCalculator.IO\AberrationCalculator.IO.csproj" />
+  </ItemGroup>
+</Project>

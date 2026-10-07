@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>Javier Ruiz, Claude Code</Authors>
+    <Company>Javier Ruiz</Company>
+    <Copyright>Copyright (c) 2026 Javier Ruiz and Claude Code</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <Description>Wavefront error from real-ray tracing, as Hopkins and Welford define it, with every convention that makes optical design programs disagree exposed as a switch</Description>
+  </PropertyGroup>
+</Project>

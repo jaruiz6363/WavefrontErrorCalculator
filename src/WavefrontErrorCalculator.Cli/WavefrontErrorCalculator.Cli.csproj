@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WavefrontErrorCalculator.Cli</RootNamespace>
+    <AssemblyName>wfe</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WavefrontErrorCalculator.Core\WavefrontErrorCalculator.Core.csproj" />
+  </ItemGroup>
+
+  <!-- AberrationCalculator's glass catalogs, for reading lenses. -->
+  <ItemGroup>
+    <None Include="..\..\external\AberrationCalculator\catalogs\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="catalogs" />
+  </ItemGroup>
+</Project>
