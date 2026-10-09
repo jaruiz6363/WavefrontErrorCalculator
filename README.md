@@ -55,6 +55,7 @@ The other commands (each prints its options when run without arguments):
 | Command | What it does |
 |---|---|
 | `wfe rayces <lens>` | The independent check: W by integrating Rayces's relation from the rays' directions, beside W from the optical path, point by point |
+| `wfe hopkins <lens>` | A third way: W by Hopkins's surface contributions and Tatian's focal shift (no exit pupil), beside the optical path with the infinite reference and the preset's own sphere |
 | `wfe parity <result.json>` | Another program's wavefront, in the format of [`docs/result-format.md`](docs/result-format.md), against WEC's under a preset: ray by ray, on that program's own refractive indices |
 | `wfe opd-table <lens> <name>=<result.json> ...` | Several programs' OPD at the same pupil points, side by side with WEC's W, as a table |
 | `wfe compare <lens> --presets A,B` | What each switch on which two presets differ does to the RMS and P-V, one switch at a time |
@@ -113,4 +114,4 @@ OSLO has no preset of its own: its conventions are reproduced by switches (`Chie
 
 - OpticStudio's third ray-aiming setting, Paraxial, has not been gathered; Off and Real have.
 - The rule by which OSLO sizes its exit-pupil sphere off axis is not identified; WEC takes the radius OSLO reports.
-- Test lenses D to F of `docs/method.md` (afocal, NA 0.9, achromat), the chord-method cross-check, Conrady's chromatic mode, and universal-coefficient sampling.
+- Test lenses D to F of `docs/method.md` (afocal, NA 0.9, achromat), Conrady's chromatic mode, and universal-coefficient sampling.

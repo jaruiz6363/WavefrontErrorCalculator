@@ -86,7 +86,7 @@ internal static class Rayces
     }
 
     /// <summary>The pupil points of a result file: its first field's map and fans, at its primary wavelength.</summary>
-    private static List<(double, double)> PointsOf(string path)
+    internal static List<(double, double)> PointsOf(string path)
     {
         var data = JsonDocument.Parse(File.ReadAllText(path)).RootElement;
         var w = data.GetProperty("wavelengths")[0];
@@ -105,7 +105,7 @@ internal static class Rayces
     }
 
     /// <summary>A grid of spacing 1/16 over the unit disk, and 60 points on its rim.</summary>
-    private static List<(double, double)> DiskPoints()
+    internal static List<(double, double)> DiskPoints()
     {
         var points = new List<(double, double)>();
         for (int i = -16; i <= 16; i++)

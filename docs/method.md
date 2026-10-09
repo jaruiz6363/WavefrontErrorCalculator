@@ -19,6 +19,7 @@ Non-goals for v1: polarization, apodization (non-uniform pupil amplitude), diffr
 |---|---|---|
 | H50 | H. H. Hopkins, *Wave Theory of Aberrations* (1950), ch. I and X | Definition, focal-shift formulas (eqs. 11–19), per-surface transfer term (eq. 195) |
 | H52 | H. H. Hopkins, Proc. Phys. Soc. B 65, 934 (1952) | Invariant foci; equally-inclined chord formula |
+| T72 | B. Tatian, Optica Acta 19, 79 (1972) | Focal shift from the invariant focus to the image point with no exit pupil (the mixed characteristic) |
 | H64 | H. H. Hopkins, Jpn. J. Appl. Phys. 4 Suppl. 1, 31 (1965) | Canonical pupil coordinates |
 | HY70 | Hopkins & Yzuel, Optica Acta 17, 157 (1970) | Diffraction integral on the reference sphere; exact defocus term with z′² |
 | H81 | H. H. Hopkins, Optica Acta 28, 667 (1981) | **The reference algorithm** (W′ = Ω′ + δΩ′), exit pupil choice, reduced coordinates |
@@ -104,7 +105,7 @@ Mirrors take a negative n after reflection, as in AberrationCalculator's existin
 
 The last segment ends on the exit reference sphere: solve |P_k + t·**d**_k − Q′|² = R′² for t. Use the numerically stable root form (W86 eq. 4.12; H81 eq. 4.21), and choose the root whose point B′ is nearest E′. The segment may be traced backwards from the image plane; the result is the same line.
 
-**Cross-check method: Hopkins chord formulation** (H81 eqs. 3.9, 3.12–3.22, 4.21). Implemented for centred systems only. It must agree with the direct sum to 10⁻⁶ wave on every test lens. It also gives the invariant aberration Ω′ separately from the focal-shift term δΩ′, which is useful in reports because Ω′ does not depend on where E′ is.
+**Cross-check method: Hopkins's surface contributions with Tatian's focal shift** (H52 eq. 7; B. Tatian, *Optica Acta* 19, 79 (1972), eq. 1), `HopkinsTatian`, `wfe hopkins`. For centred systems, not afocal. Each surface changes the aberration Ω of a ray against the chief ray, referred to their invariant focus (the mid-point of the shortest join), by Δ(N e), e = Σ(λ + λ̄)(X − X̄)/(1 + Σλλ̄), from the two rays' points of incidence and directions alone; the sum is Ω′ in image space, which does not depend on any exit pupil. Tatian's focal shift −N(QD − Q̄D̄) then refers it to the image point I with no exit pupil either: Hamilton's mixed characteristic, W measured to the foot of the perpendicular from I on each ray, which is `ExitPupil=Infinite` (OpticStudio's Reference OPD "Infinity"). Hopkins's own focal shift (H52 eq. 13) referred it instead to a sphere through the exit pupil, as the direct sum does with a finite E′. It agrees with the direct sum to 10⁻⁸ wave on every test lens (verification.md). Tatian's sign is for the ray's path minus the chief ray's; here the focal shift enters with this program's sign.
 
 ### 4.3 Afocal systems
 
@@ -369,7 +370,7 @@ wfe parity <result.json> --preset Zemax [--set ...]   # another program's wavefr
 - **W from the ray aberrations:** Rayces's exact relation integrated across the pupil (§3.4) gives the optical-path W to 10⁻⁹ wave or better, 7×10⁻⁹ on US8264785's aspheres (`RaycesTests`).
 - **Piston invariance:** adding a constant path to every ray leaves the RMS (standard deviation) and P-V unchanged.
 - **Radius sensitivity:** changing R′ by δR changes W by about N′θ²δR/2 (W86 §7.4).
-- **Chord vs direct sum:** the two methods agree (§4.2).
+- **Hopkins-Tatian vs direct sum:** the two methods agree under the infinite reference (§4.2; `HopkinsTatianTests`).
 - **Centre-shift linearity:** small moves of Q′ follow W86 eq. 7.18.
 - **Coordinate invariance:** with the `ExitArea` weighting, the RMS from launch-grid samples matches the RMS from `ExitSphereGrid` samples to the quadrature error, over the same domain. The canonical circle the exit grid fills is the real exit pupil only to first order, so the exit grid must reach past it to the image of the real stop.
 
@@ -472,4 +473,4 @@ Defects found (reading the code, then by test where marked):
 | 2 | Pupil exploration, vignetted chief ray, canonical coordinates, area weights, Zernike; tests §9.1 (5–6) and §9.2 (**done**; `LaunchRefined` and the coordinate-invariance test wait for `ExitSphereGrid` aiming in phase 3) |
 | 3 | All switches; `compare` command; Optiland preset verified on test lenses A–F (**done** except lenses D–F: afocal, NA 0.9, achromat; the preset is confirmed on three lenses — double Gauss, vignetted Cooke triplet, fast aspheric lens — at all fields and wavelengths) |
 | 4 | LensHH-LT and Zemax fingerprinting; presets; `docs/programs.md` (**done** for Zemax: every Reference OPD setting, ray aiming off and real, and the Zernike analysis; and for LensHH-LT: OPD, RMS, P-V and the Zernike fit, ray aiming off and real, on five lenses) |
-| 5 | OSLO (**done**: OPD at 857 points per field on five lenses, statistics, and the Zernike fit on axis); chord-method cross-check; `Conrady` chromatic mode; universal-coefficient sampling |
+| 5 | OSLO (**done**: OPD at 857 points per field on five lenses, statistics, and the Zernike fit on axis); Hopkins-Tatian cross-check (**done**); `Conrady` chromatic mode; universal-coefficient sampling |

@@ -250,6 +250,21 @@ wfe rayces Cooke_40deg_FC.zmx --points zemax-opdc/Cooke_40deg_FC_OPDC_Off.json -
 largest |integrated - path| 1.135E-009 waves
 ```
 
+`wfe hopkins` computes W a third way: H. H. Hopkins's (1952) contribution of each surface to the
+difference between the ray and the chief ray, and Tatian's (1972) shift from their invariant focus
+to the image point. That W has no exit pupil in it; it is the W of the reference of infinite radius
+(`ExitPupil=Infinite`, OpticStudio's Reference OPD "Infinity"), and the command compares it with the
+optical path under that reference and with the W of the preset's own sphere:
+
+```
+wfe hopkins KingslakeDG.zmx --preset Zemax
+  field 14: 857 points, |Hopkins-Tatian - path| 7.076E-011, |closed form - join| 4.913E-012, |W| up to 5.8930, |preset sphere - Hopkins-Tatian| up to 5.147E-001 waves
+```
+
+The last column is why a program using Hopkins and Tatian's formulas and one reporting OPD on a
+sphere through the exit pupil, such as OpticStudio's default, can differ by half a wave on a lens
+with a few waves of aberration: the definitions differ, not the arithmetic.
+
 Agreement at 10⁻⁹ wave or so means the per-ray W is right on that lens, whatever its
 conventions; it works under any preset whose reference sphere has a finite radius. Without
 `--points` it uses 857 points over the pupil; `--csv` writes them all. It takes a few seconds per

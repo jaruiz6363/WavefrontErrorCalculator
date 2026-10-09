@@ -37,7 +37,8 @@ public static class Program
         "wfe compare <lens> --presets A,B    what each switch between two presets does\n" +
         "wfe parity <result.json> ...        another program's wavefront against this one's\n" +
         "wfe opd-table <lens> name=result.json ... --out x.md\n" +
-        "                                    programs' OPD side by side, point by point\n";
+        "                                    programs' OPD side by side, point by point\n" +
+        "wfe hopkins <lens>                  W by Hopkins's surface contributions and Tatian's focal shift\n";
 
     public static int Main(string[] args)
     {
@@ -56,6 +57,7 @@ public static class Program
         if (args.Length > 0 && args[0] == "parity") return Parity.Run(args.Skip(1).ToArray(), output);
         if (args.Length > 0 && args[0] == "opd-table") return OpdTable.Run(args.Skip(1).ToArray(), output);
         if (args.Length > 0 && args[0] == "rayces") return Rayces.Run(args.Skip(1).ToArray(), output);
+        if (args.Length > 0 && args[0] == "hopkins") return Hopkins.Run(args.Skip(1).ToArray(), output);
         if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
         {
             output.Write(Usage);

@@ -31,6 +31,36 @@ Three singlets of N-BK7 (R ±50 mm, 10 mm thick, f = 50 mm) built to push the ch
 
 On `ShortPupilSinglet` at 3°, 59 of the 857 rays do not meet Zemax's sphere at all, so have no W either way. The rays there meet the reference sphere up to 32° from its radius, and Nijboer's W parts from the along-ray W by 685 of 3,928 waves at the rim (17%); the integration, converted, still agrees (`WithThePupilCloseToTheImageTheTwoDefinitionsOfWPartButTheMethodsAgree`; guide/rayces-method.md §4). `RaycesTests` runs all three.
 
+## W a third way: Hopkins's surface contributions and Tatian's focal shift (`HopkinsTatianTests`, `wfe hopkins`)
+
+H. H. Hopkins (1952, *Proc. Phys. Soc. B* 65, 934, eq. 7) gives the change at each surface in the aberration of a ray against the chief ray, referred to their *invariant focus*, the mid-point of their shortest join, from the two rays' points of incidence and directions alone: Δ(N e), e = Σ(λ + λ̄)(X − X̄)/(1 + Σλλ̄). Summed over the surfaces it is the aberration in image space, computed as a difference between the two rays rather than by subtracting two long paths. B. Tatian (1972, *Optica Acta* 19, 79, eq. 1) moves the reference from that focus to the chosen image point I by −N(QD − Q̄D̄), Q and Q̄ the feet of the perpendiculars from I to the two rays: Hamilton's mixed characteristic, with no exit pupil. That is W measured to the foot of the perpendicular from I on each ray, which is this program's `ExitPupil=Infinite` and Zemax OpticStudio's Reference OPD "Infinity". Largest |Hopkins-Tatian − path| in waves, against the optical path with that reference, over the 857 OPDC points of every field at the primary wavelength (Zemax preset, I at the chief ray's image point):
+
+| Lens | Largest W (waves) | Aiming off | Aiming real |
+|---|---|---|---|
+| Kingslake double Gauss | 6.1 | 8.0×10⁻¹¹ | 6.6×10⁻¹¹ |
+| Cooke triplet | 3.7 | 8.8×10⁻¹⁰ | 1.1×10⁻⁹ |
+| US8264785 | 5.4 | 6.5×10⁻⁹ | 7.1×10⁻⁹ |
+| 1:1 relay | 3.6 | 1.9×10⁻¹⁰ | 2.6×10⁻¹⁰ |
+| NA 0.3 objective | 1.6 | 1.5×10⁻¹⁰ | 1.4×10⁻¹⁰ |
+| `FastSinglet` | 5,360 | 4.4×10⁻¹¹ | 5.6×10⁻¹¹ |
+| `FastSinglet_Defocused` | 5,683 | 4.5×10⁻¹¹ | 4.4×10⁻¹¹ |
+| `ShortPupilSinglet` | 2,095 | 3.7×10⁻¹¹ | 3.7×10⁻¹¹ |
+
+Tatian's eq. 1 in closed form agrees with the same focal shift taken from the shortest join's own geometry to 2.3×10⁻¹⁰ wave wherever the join is well conditioned.
+
+A program that reports this W and one that reports W on a reference sphere through the exit pupil therefore part company as the aberration grows, and more so as the exit pupil nears the image (Tatian p. 79). Largest |OPDC − Hopkins-Tatian|, OPDC being Zemax's default (the sphere through the chief ray's crossing of the paraxial exit pupil), aiming off:
+
+| Lens | On axis | Largest field |
+|---|---|---|
+| Kingslake double Gauss | 2.5×10⁻⁴ (W 0.19) | 0.51 (W 5.9, 14°) |
+| Cooke triplet | 1.2×10⁻² (W 1.3) | 2.5×10⁻² (W 3.5, 20°) |
+| US8264785 | 9.4×10⁻⁵ (W 0.08) | 0.87 (W 2.9, 17.5°) |
+| 1:1 relay | 1.4×10⁻² (W 2.0) | 1.3×10⁻² (W 3.6) |
+| NA 0.3 objective | 8.8×10⁻³ (W 0.62) | 3.7×10⁻² (W 1.6) |
+| `ShortPupilSinglet` | 0.71 (W 3.2) | 1.05×10⁴ (W 2,095, 3°) |
+
+So a difference of about a wave between a Hopkins-Tatian program and OPDC, at a few waves of aberration, is a difference of definition and not an error in either; with Reference OPD "Infinity", OpticStudio reports Hopkins and Tatian's W.
+
 ## Cases with exact answers (`AnalyticTests`, `SwitchTests`)
 
 | Case | Expected | Result |
