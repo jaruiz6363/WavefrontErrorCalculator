@@ -48,7 +48,7 @@ H. H. Hopkins (1952, *Proc. Phys. Soc. B* 65, 934, eq. 7) gives the change at ea
 
 Tatian's eq. 1 in closed form agrees with the same focal shift taken from the shortest join's own geometry to 2.3×10⁻¹⁰ wave wherever the join is well conditioned.
 
-A program that reports this W and one that reports W on a reference sphere through the exit pupil therefore part company as the aberration grows, and more so as the exit pupil nears the image (Tatian p. 79). Largest |OPDC − Hopkins-Tatian|, OPDC being Zemax's default (the sphere through the chief ray's crossing of the paraxial exit pupil), aiming off:
+This W and the W on a reference sphere through the exit pupil are different quantities, and they part company as the aberration grows, more so as the exit pupil nears the image (Tatian p. 79). Largest |OPDC − Hopkins-Tatian|, OPDC being Zemax's default (the sphere through the chief ray's crossing of the paraxial exit pupil), aiming off:
 
 | Lens | On axis | Largest field |
 |---|---|---|
@@ -59,11 +59,11 @@ A program that reports this W and one that reports W on a reference sphere throu
 | NA 0.3 objective | 8.8×10⁻³ (W 0.62) | 3.7×10⁻² (W 1.6) |
 | `ShortPupilSinglet` | 0.71 (W 3.2) | 1.05×10⁴ (W 2,095, 3°) |
 
-So a difference of about a wave between a Hopkins-Tatian program and OPDC, at a few waves of aberration, is a difference of definition and not an error in either; with Reference OPD "Infinity", OpticStudio reports Hopkins and Tatian's W.
+So two calculations, one with each definition, can differ by about a wave at a few waves of aberration with neither in error. OpticStudio's Reference OPD "Infinity" is the infinite reference (§ Zemax OpticStudio), so it is the setting to compare a Hopkins-Tatian W with.
 
 ### Hopkins 1952 without Tatian (`HopkinssOwnFocalShiftGivesTheRealExitPupilSpheresW`, `wfe hopkins --1952`)
 
-Hopkins's own focal shift (1952 eq. 13) refers Ω to the sphere about the image point that cuts the chief ray in the exit pupil, measured along the ray: the definition of the optical-path W on a sphere through E′. With E′ in the real exit pupil (`ExitPupil=RealChief`), the shift taken exactly agrees with the optical path to 1.3×10⁻¹⁰ wave (double Gauss), 8×10⁻¹⁰ (Cooke), 6.4×10⁻⁹ (US8264785), 2×10⁻¹⁰ (relay), 1.3×10⁻¹⁰ (objective), 6.4×10⁻¹¹ and 6×10⁻¹⁰ on the singlets. Eq. 13 as printed drops δ², δ the along-ray distance between the two spheres, and that costs, at the largest field: 4.5×10⁻⁴ wave (double Gauss, W 6.4), 7.5×10⁻⁵ (Cooke, W 3.5), 1.2×10⁻² (US8264785, W 2.9), 3.5×10⁻⁵ (relay), 3.3×10⁻⁵ (objective), and tens to hundreds of waves on the singlets with a thousand. A program using Hopkins 1952 with the real exit pupil therefore agrees with this program's `RealChief` sphere to that approximation, and differs from Hopkins-Tatian much as OPDC does (double Gauss 0.51, US8264785 0.82, Cooke 0.035 wave at the largest field): the real and paraxial exit pupils are close, the infinite reference is not.
+Hopkins's own focal shift (1952 eq. 13) refers Ω to the sphere about the image point that cuts the chief ray in the exit pupil, measured along the ray: the definition of the optical-path W on a sphere through E′. With E′ in the real exit pupil (`ExitPupil=RealChief`), the shift taken exactly agrees with the optical path to 1.3×10⁻¹⁰ wave (double Gauss), 8×10⁻¹⁰ (Cooke), 6.4×10⁻⁹ (US8264785), 2×10⁻¹⁰ (relay), 1.3×10⁻¹⁰ (objective), 6.4×10⁻¹¹ and 6×10⁻¹⁰ on the singlets. Eq. 13 as printed drops δ², δ the along-ray distance between the two spheres, and that costs, at the largest field: 4.5×10⁻⁴ wave (double Gauss, W 6.4), 7.5×10⁻⁵ (Cooke, W 3.5), 1.2×10⁻² (US8264785, W 2.9), 3.5×10⁻⁵ (relay), 3.3×10⁻⁵ (objective), and tens to hundreds of waves on the singlets with a thousand. Hopkins 1952 with the real exit pupil is therefore this program's `RealChief` sphere, to that approximation as printed, and it differs from Hopkins-Tatian much as OPDC does (double Gauss 0.51, US8264785 0.82, Cooke 0.035 wave at the largest field): the real and paraxial exit pupils are close, the infinite reference is not.
 
 ## Cases with exact answers (`AnalyticTests`, `SwitchTests`)
 

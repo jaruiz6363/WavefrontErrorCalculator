@@ -72,6 +72,8 @@ So the difference between WEC's sphere and Zemax's is largest where the lens is 
 
 On the Cooke triplet at 20° the two differ by up to 2.8×10⁻⁴ wave along the tangential line, and 7.9×10⁻⁴ over the whole pupil, against a wavefront of several waves. With E′ switched to Zemax's choice (and the primary wavelength's sphere used at every wavelength), WEC reproduces Zemax's OPDC and LensHH-LT's to about 10⁻⁸ wave.
 
+In the limit of an infinite radius, each ray is measured to the foot of the perpendicular from Q′ (`ExitPupil=Infinite`). That is a different definition of W, with no exit pupil in it: Tatian's (1972), Hamilton's mixed characteristic. It differs from W on a sphere through the exit pupil by much more than the choice of E′ does, up to half a wave on the double Gauss at 14°. The companion document on Hopkins's and Tatian's formulas explains it.
+
 ## 7. The conventions, in one place
 
 | Switch | WEC default | Zemax OPDC | What it decides |
@@ -89,3 +91,4 @@ Presets set these together: `Reference` (the defaults), `Zemax`, `ZemaxZernike`,
 - **Exact cases:** a paraboloid on axis, a sphere imaging its centre of curvature and the aplanatic points of a sphere give W = 0 to below 10⁻⁶ wave.
 - **Other programs:** under their own conventions WEC reproduces Zemax OpticStudio's OPDC to 6×10⁻⁸ wave, LensHH-LT to 2×10⁻⁸, Optiland to 2×10⁻⁸ and OSLO to 1×10⁻⁸, at 857 points per field on five lenses: three at infinite conjugates and two finite, on axis and off.
 - **An independent method:** integrating Rayces's exact relation between wave and ray aberration gives the same W from the rays' directions alone, without any optical path, to 10⁻⁹ wave or better (7×10⁻⁹ on US8264785's aspheres). The companion document explains it.
+- **A third method:** Hopkins's surface contributions (1952), with Tatian's focal shift (1972), give W from the difference between each ray and the chief ray surface by surface, again without summing paths. On the same definition of W it agrees with the optical path to 10⁻⁸ wave or better on every test lens, including singlets with thousands of waves. Its own companion document explains it, and the two definitions of W it brings out.

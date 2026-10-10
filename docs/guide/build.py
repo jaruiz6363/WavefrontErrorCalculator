@@ -577,6 +577,92 @@ def rayces_convergence():
     save(fig, "rayces-convergence.svg")
 
 
+# ── Hopkins-Tatian figures ────────────────────────────────────────────────────────────────
+
+def hopkins_geometry():
+    """Image space: a ray and the chief ray, their invariant focus M, the image point I, the two
+    focal shifts - Hopkins's along the ray between spheres through E′, Tatian's to the feet Q, Q̄
+    of the perpendiculars from I."""
+    fig, ax = new(11, 6.2)
+    I = np.array([10.0, 0.0])                     # image point: where the chief ray lands
+    E = np.array([0.0, 0.6])                      # chief ray's point in the exit pupil
+    lb = (I - E) / np.linalg.norm(I - E)          # chief ray direction
+    M = E + 0.84 * (I - E)                        # on the chief ray, short of I
+    P0 = np.array([0.0, 3.0])                     # the ray, through M and on to the image plane
+    l = (M - P0) / np.linalg.norm(M - P0)
+    T = P0 + ((I[0] - P0[0]) / l[0]) * l          # where the ray meets the image plane
+
+    ax.plot([I[0], I[0]], [-2.6, 3.4], color=GREY, lw=1)
+    ax.text(I[0] + 0.1, -2.9, "image plane", fontsize=9, color=GREY)
+    ax.plot([-0.4, -0.4], [-2.6, 3.4], color=GREY, lw=1, ls=":")
+    ax.text(-0.3, -2.9, "exit pupil", fontsize=9, color=GREY)
+    ax.plot(*zip(E - 0.4 * lb, I + 0.8 * lb), color=BLUE, lw=1.8)
+    ax.plot(*zip(P0, T + 0.8 * l), color=RED, lw=1.8)
+    ax.text(*(E + 4.0 * lb + np.array([0.0, -0.5])), "chief ray", color=BLUE, fontsize=10)
+    ax.text(*(P0 + 4.0 * l + np.array([0.0, 0.3])), "ray", color=RED, fontsize=10)
+
+    # Spheres through E: about I (the reference sphere) and about M.
+    rI, rM = np.linalg.norm(E - I), np.linalg.norm(E - M)
+    aI = math.degrees(math.atan2(E[1] - I[1], E[0] - I[0]))
+    aM = math.degrees(math.atan2(E[1] - M[1], E[0] - M[0]))
+    arc(ax, I, rI, aI - 22, aI + 22, color=GREEN, lw=1.4)
+    arc(ax, M, rM, aM - 30, aM + 24, color=PURPLE, lw=1.4, ls="--")
+    BI = line_sphere(P0, l, I, rI, E)
+    BM = line_sphere(P0, l, M, rM, E)
+    dot(ax, BI, None, color=GREEN, size=4)
+    dot(ax, BM, None, color=PURPLE, size=4)
+    note(ax, "sphere about I through E′\n(reference sphere)", BI + np.array([-0.05, 0.25]), (0.9, 4.3), GREEN)
+    note(ax, "sphere about M\nthrough E′", BM + np.array([0.0, -0.1]), (-1.1, -2.0), PURPLE)
+
+    # Feet of the perpendiculars from I.
+    Q = P0 + ((I - P0) @ l) * l
+    ax.plot(*zip(I, Q), color=GREY, lw=0.8, ls="--")
+    dot(ax, Q, "Q", (-6, -16), color=RED, size=4)
+
+    dot(ax, E, "E′", (-18, -14), color=BLUE)
+    dot(ax, M, "M", (-4, 10), color=PURPLE)
+    dot(ax, I, "I", (6, 6), color=BLUE)
+    note(ax, "M: the invariant focus\n(mid-point of the shortest join;\nhere, in one plane, where they cross)", M, (5.2, -2.7), PURPLE)
+    note(ax, "Hopkins 1952: shift between\nthe two spheres, along the ray", 0.5 * (BI + BM), (1.6, -1.2), GREEN)
+    note(ax, "Tatian 1972: to the foot Q of the\nperpendicular from I (Q̄ = I itself\non the chief ray); no exit pupil", Q, (10.5, 3.9), RED)
+    ax.set_xlim(-1.4, 14.8)
+    ax.set_ylim(-3.2, 5.1)
+    save(fig, "hopkins-geometry.svg")
+
+
+def wfe_hopkins_csv(lens: str, out: Path):
+    wfe = ROOT / "src/WavefrontErrorCalculator.Cli/bin/Debug/net8.0/wfe.dll"
+    subprocess.run(["dotnet", "build", str(ROOT / "src/WavefrontErrorCalculator.Cli"), "-c", "Debug", "-v", "q", "-nologo"],
+                   check=True, capture_output=True)
+    subprocess.run(["dotnet", str(wfe), "hopkins", str(ROOT / f"tests/TestData/{lens}.zmx"),
+                    "--preset", "Zemax", "--csv", str(out)], check=True, capture_output=True)
+
+
+def hopkins_definitions(tmp: Path):
+    path = tmp / "hopkins_dg.csv"
+    wfe_hopkins_csv("KingslakeDG", path)
+    rows = [r for r in csv.DictReader(path.open()) if r["field"] == "2" and abs(float(r["px"])) < 1e-12
+            and r["preset_sphere"] not in ("NaN", "")]
+    rows = sorted(rows, key=lambda r: float(r["py"]))
+    py = [float(r["py"]) for r in rows]
+    ht = [float(r["hopkins_tatian"]) for r in rows]
+    sph = [float(r["preset_sphere"]) for r in rows]
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(9, 5.6), sharex=True, gridspec_kw={"height_ratios": [3, 2]})
+    a1.plot(py, sph, color=BLUE, lw=2.2, label="on the sphere through the exit pupil (OPDC)")
+    a1.plot(py, ht, color=RED, lw=1.4, ls="--", label="Hopkins and Tatian: no exit pupil")
+    a1.set_ylabel("W (waves)")
+    a1.legend(fontsize=9)
+    a1.grid(alpha=0.3)
+    a2.plot(py, [s - h for s, h in zip(sph, ht)], color=PURPLE, lw=1.4)
+    a2.axhline(0, color="black", lw=0.7)
+    a2.set_ylabel("difference (waves)")
+    a2.set_xlabel("Py (Px = 0)")
+    a2.grid(alpha=0.3)
+    fig.suptitle("Kingslake double Gauss, 14°, ray aiming off: the two definitions of W", fontsize=11)
+    fig.tight_layout()
+    save(fig, "hopkins-definitions.svg")
+
+
 # ── markdown to print HTML ────────────────────────────────────────────────────────────────
 
 def inline(s: str) -> str:
@@ -726,8 +812,11 @@ def main(out_dir: str) -> None:
     rayces_paths()
     rayces_cooke(out)
     rayces_convergence()
+    hopkins_geometry()
+    hopkins_definitions(out)
     for name, title, source in [("wec-method", "WEC method", HERE / "wec-method.md"),
                                 ("rayces-method", "Rayces method", HERE / "rayces-method.md"),
+                                ("hopkins-tatian-method", "Hopkins-Tatian method", HERE / "hopkins-tatian-method.md"),
                                 ("user-guide", "WEC user guide", HERE.parent / "user-guide.md")]:
         page = to_html(source.read_text(encoding="utf-8"), title)
         (out / f"{name}.html").write_text(page, encoding="utf-8")

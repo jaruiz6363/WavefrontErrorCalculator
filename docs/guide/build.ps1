@@ -16,7 +16,7 @@ if (-not (Test-Path $edge)) { $edge = "$env:ProgramFiles\Microsoft\Edge\Applicat
 $profileDir = Join-Path ([IO.Path]::GetTempPath()) 'wec-guide-edge'
 New-Item -ItemType Directory -Force $OutDir | Out-Null
 $start = Get-Date
-foreach ($doc in @(@{ Html = 'wec-method.html'; Pdf = 'WEC_method.pdf' }, @{ Html = 'rayces-method.html'; Pdf = 'Rayces_method.pdf' }, @{ Html = 'user-guide.html'; Pdf = 'WEC_user_guide.pdf' })) {
+foreach ($doc in @(@{ Html = 'wec-method.html'; Pdf = 'WEC_method.pdf' }, @{ Html = 'rayces-method.html'; Pdf = 'Rayces_method.pdf' }, @{ Html = 'hopkins-tatian-method.html'; Pdf = 'Hopkins_Tatian_method.pdf' },@{ Html = 'user-guide.html'; Pdf = 'WEC_user_guide.pdf' })) {
     $out = [IO.Path]::GetFullPath((Join-Path $OutDir $doc.Pdf))
     $src = 'file:///' + ((Join-Path $tmp $doc.Html) -replace '\\', '/')
     # Each print in its own profile, waited for: a second Edge launched on a profile still in use

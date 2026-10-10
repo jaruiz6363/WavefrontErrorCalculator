@@ -261,9 +261,11 @@ wfe hopkins KingslakeDG.zmx --preset Zemax
   field 14: 857 points, |Hopkins-Tatian - path| 7.076E-011, |closed form - join| 4.913E-012, |W| up to 5.8930, |preset sphere - Hopkins-Tatian| up to 5.147E-001 waves
 ```
 
-The last column is why a program using Hopkins and Tatian's formulas and one reporting OPD on a
-sphere through the exit pupil, such as OpticStudio's default, can differ by half a wave on a lens
-with a few waves of aberration: the definitions differ, not the arithmetic.
+The last column is the difference between the two definitions of W: on a sphere through the exit
+pupil (OpticStudio's default) and with no exit pupil (Tatian's). It reaches half a wave on a lens with
+a few waves of aberration, with no error in either. `--1952` uses Hopkins's own focal shift instead,
+onto the sphere through the exit pupil the options name, exactly and as printed.
+[`guide/hopkins-tatian-method.md`](guide/hopkins-tatian-method.md) explains both.
 
 Agreement at 10⁻⁹ wave or so means the per-ray W is right on that lens, whatever its
 conventions; it works under any preset whose reference sphere has a finite radius. Without
