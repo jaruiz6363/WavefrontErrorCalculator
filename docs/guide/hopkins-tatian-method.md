@@ -76,18 +76,18 @@ So a difference of the order of a wave between two calculations, one with each d
 
 Each method computes W by a different route: optical path (`wec-method.md`), the rays' slopes in image space (`rayces-method.md`), and the surface-by-surface difference between the ray and the chief ray (this document). Asked for the same definition, they agree.
 
-The table compares the Hopkins-Tatian W with the optical-path W, both on definition B, for the same rays: each entry is the largest difference between the two methods over the 857 points of every field of the lens. The check was run twice, once with the rays traced with ray aiming off and once with it on, so that the agreement does not depend on how the rays are aimed; the two columns are not compared with each other. Differences of 10⁻¹¹ to 10⁻⁹ wave are at the level of rounding: the two methods give the same W.
+The table compares the Hopkins-Tatian W with the optical-path W, both on definition B, for the same rays: each entry is the largest difference between the two methods over the 857 points of every field of the lens. Differences of 10⁻¹¹ to 10⁻⁹ wave are at the level of rounding: the two methods give the same W.
 
-| Lens | Largest W (waves) | Largest difference between the methods (waves), ray aiming off | The same, ray aiming on |
-|---|---|---|---|
-| Kingslake double Gauss | 6.1 | 8.0×10⁻¹¹ | 6.6×10⁻¹¹ |
-| Cooke triplet | 3.7 | 8.8×10⁻¹⁰ | 1.1×10⁻⁹ |
-| US8264785 | 5.4 | 6.5×10⁻⁹ | 7.1×10⁻⁹ |
-| 1:1 relay | 3.6 | 1.9×10⁻¹⁰ | 2.6×10⁻¹⁰ |
-| NA 0.3 objective | 1.6 | 1.5×10⁻¹⁰ | 1.4×10⁻¹⁰ |
-| `FastSinglet` | 5,360 | 4.4×10⁻¹¹ | 5.6×10⁻¹¹ |
-| `FastSinglet_Defocused` | 5,683 | 4.5×10⁻¹¹ | 4.4×10⁻¹¹ |
-| `ShortPupilSinglet` | 2,095 | 3.7×10⁻¹¹ | 3.7×10⁻¹¹ |
+| Lens | Largest W (waves) | Largest difference between the two methods (waves) |
+|---|---|---|
+| Kingslake double Gauss | 6.1 | 8.0×10⁻¹¹ |
+| Cooke triplet | 3.7 | 8.8×10⁻¹⁰ |
+| US8264785 | 5.4 | 6.5×10⁻⁹ |
+| 1:1 relay | 3.6 | 1.9×10⁻¹⁰ |
+| NA 0.3 objective | 1.6 | 1.5×10⁻¹⁰ |
+| `FastSinglet` | 5,360 | 4.4×10⁻¹¹ |
+| `FastSinglet_Defocused` | 5,683 | 4.5×10⁻¹¹ |
+| `ShortPupilSinglet` | 2,095 | 3.7×10⁻¹¹ |
 
 Tatian's eq. 1 in coordinates agrees with the same shift taken from the shortest join's own geometry to 2×10⁻¹⁰ wave. With Hopkins's own focal shift instead, onto the sphere through the real exit pupil (A, `RealChief`): taken exactly it agrees with the optical path to between 3×10⁻¹¹ and 6×10⁻⁹ wave; eq. 13 as printed, without δ², is off by 4.5×10⁻⁴ wave on the double Gauss (W 6.4), 7.5×10⁻⁵ on the Cooke triplet, 1.2×10⁻² on US8264785 (W 2.9), 3.5×10⁻⁵ on the relay and objective, and tens to hundreds of waves on the singlets with a thousand. The Rayces integration agrees with the optical path on A to 10⁻⁹ wave (`rayces-method.md`).
 
