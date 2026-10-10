@@ -61,17 +61,17 @@ This W and the W on a reference sphere through the exit pupil are different quan
 
 So two calculations, one with each definition, can differ by about a wave at a few waves of aberration with neither in error.
 
-Against OpticStudio directly (`HopkinsAndTatiansWIsOpticStudiosInfinityOpd`): Hopkins-Tatian at OpticStudio 2022 R2's own pupil points and indices, against its OPD with Reference OPD "Infinity" (fans and grid, every field and wavelength, about 2,500 rays per result):
+Against OpticStudio directly (`HopkinsAndTatiansWIsOpticStudiosInfinityOpd`): Hopkins-Tatian at OpticStudio 2022 R2's own pupil points and indices, against its ray-trace OPD with Reference OPD "Infinity", both with ray aiming real (fans and grid, every field and wavelength, about 2,500 rays per lens):
 
-| Lens | Ray aiming off | Ray aiming real |
-|---|---|---|
-| Kingslake double Gauss | 2.9×10⁻¹⁰ | 1.4×10⁻⁷ |
-| Cooke triplet | 9.0×10⁻¹⁰ | 5.7×10⁻⁸ |
-| US8264785 | 8.6×10⁻⁹ | 1.3×10⁻⁷ |
-| 1:1 relay | 8.2×10⁻¹⁰ | 1.1×10⁻⁷ |
-| NA 0.3 objective | 5.6×10⁻¹⁰ | 8.5×10⁻⁸ |
+| Lens | Largest difference (waves) |
+|---|---|
+| Kingslake double Gauss | 1.4×10⁻⁷ |
+| Cooke triplet | 5.7×10⁻⁸ |
+| US8264785 | 1.3×10⁻⁷ |
+| 1:1 relay | 1.1×10⁻⁷ |
+| NA 0.3 objective | 8.5×10⁻⁸ |
 
-With ray aiming real the two programs' aiming iterations stop at slightly different places, as in every comparison with OpticStudio above. OpticStudio's Reference OPD "Infinity" computes Hopkins and Tatian's W.
+What remains is where the two programs' aiming iterations stop, as in every comparison with OpticStudio above. OpticStudio's Reference OPD "Infinity" computes Hopkins and Tatian's W. (The test also runs the results gathered with ray aiming off.)
 
 ### Hopkins 1952 without Tatian (`HopkinssOwnFocalShiftGivesTheRealExitPupilSpheresW`, `wfe hopkins --1952`)
 
