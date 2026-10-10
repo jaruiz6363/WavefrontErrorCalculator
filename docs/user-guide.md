@@ -250,22 +250,19 @@ wfe rayces Cooke_40deg_FC.zmx --points zemax-opdc/Cooke_40deg_FC_OPDC_Off.json -
 largest |integrated - path| 1.135E-009 waves
 ```
 
-`wfe hopkins` computes W a third way: H. H. Hopkins's (1952) contribution of each surface to the
-difference between the ray and the chief ray, and Tatian's (1972) shift from their invariant focus
-to the image point. That W has no exit pupil in it; it is the W of the reference of infinite radius
-(`ExitPupil=Infinite`, OpticStudio's Reference OPD "Infinity"), and the command compares it with the
-optical path under that reference and with the W of the preset's own sphere:
+`wfe hopkins --1952` computes W a third way: H. H. Hopkins's (1952) contribution of each surface
+to the difference between the ray and the chief ray, referred to the same reference sphere, beside
+W from the optical path:
 
 ```
-wfe hopkins KingslakeDG.zmx --preset Zemax
-  field 14: 857 points, |Hopkins-Tatian - path| 7.076E-011, |closed form - join| 4.913E-012, |W| up to 5.8930, |preset sphere - Hopkins-Tatian| up to 5.147E-001 waves
+wfe hopkins KingslakeDG.zmx --1952 --set RayAiming=RealStop --set ExitPupil=RealChief --set ChiefRay=StopCenter
+  field 14: 857 points, |exact shift - path| 7.855E-011, |eq. 13 as printed - path| 4.906E-004, |W| up to 6.6818 waves
+largest |exact - path| 7.855E-011, |eq. 13 - path| 4.906E-004 waves
 ```
 
-The last column is the difference between the two definitions of W: on a sphere through the exit
-pupil (OpticStudio's default) and with no exit pupil (Tatian's). It reaches half a wave on a lens with
-a few waves of aberration, with no error in either. `--1952` uses Hopkins's own focal shift instead,
-onto the sphere through the exit pupil the options name, exactly and as printed.
-[`guide/hopkins-tatian-method.md`](guide/hopkins-tatian-method.md) explains both.
+Without `--1952` it uses Tatian's (1972) focal shift instead, which refers W to the reference of
+infinite radius (`ExitPupil=Infinite`, OpticStudio's Reference OPD "Infinity"), and compares on
+that. [`guide/hopkins-tatian-method.md`](guide/hopkins-tatian-method.md) explains both.
 
 Agreement at 10⁻⁹ wave or so means the per-ray W is right on that lens, whatever its
 conventions; it works under any preset whose reference sphere has a finite radius. Without

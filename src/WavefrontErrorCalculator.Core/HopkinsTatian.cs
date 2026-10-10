@@ -167,7 +167,7 @@ public static class HopkinsTatian
     {
         var w0 = p - pb;
         double b = l.Dot(lb), d = l.Dot(w0), ee = lb.Dot(w0), den = 1.0 - b * b;
-        if (den < 1e-16) return double.NaN;
+        if (den < 1e-16) return w0.Length < 1e-12 ? 0.0 : double.NaN;   // the chief ray itself: no shift
         var dj = p + ((b * ee - d) / den) * l;
         var djb = pb + ((ee - b * d) / den) * lb;
         var m = 0.5 * (dj + djb);

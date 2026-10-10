@@ -630,39 +630,6 @@ def hopkins_geometry():
     save(fig, "hopkins-geometry.svg")
 
 
-def wfe_hopkins_csv(lens: str, out: Path):
-    wfe = ROOT / "src/WavefrontErrorCalculator.Cli/bin/Debug/net8.0/wfe.dll"
-    subprocess.run(["dotnet", "build", str(ROOT / "src/WavefrontErrorCalculator.Cli"), "-c", "Debug", "-v", "q", "-nologo"],
-                   check=True, capture_output=True)
-    subprocess.run(["dotnet", str(wfe), "hopkins", str(ROOT / f"tests/TestData/{lens}.zmx"),
-                    "--preset", "Zemax", "--csv", str(out)], check=True, capture_output=True)
-
-
-def hopkins_definitions(tmp: Path):
-    path = tmp / "hopkins_dg.csv"
-    wfe_hopkins_csv("KingslakeDG", path)
-    rows = [r for r in csv.DictReader(path.open()) if r["field"] == "2" and abs(float(r["px"])) < 1e-12
-            and r["preset_sphere"] not in ("NaN", "")]
-    rows = sorted(rows, key=lambda r: float(r["py"]))
-    py = [float(r["py"]) for r in rows]
-    ht = [float(r["hopkins_tatian"]) for r in rows]
-    sph = [float(r["preset_sphere"]) for r in rows]
-    fig, (a1, a2) = plt.subplots(2, 1, figsize=(9, 5.6), sharex=True, gridspec_kw={"height_ratios": [3, 2]})
-    a1.plot(py, sph, color=BLUE, lw=2.2, label="on the sphere through the exit pupil (OPDC)")
-    a1.plot(py, ht, color=RED, lw=1.4, ls="--", label="Hopkins and Tatian: no exit pupil")
-    a1.set_ylabel("W (waves)")
-    a1.legend(fontsize=9)
-    a1.grid(alpha=0.3)
-    a2.plot(py, [s - h for s, h in zip(sph, ht)], color=PURPLE, lw=1.4)
-    a2.axhline(0, color="black", lw=0.7)
-    a2.set_ylabel("difference (waves)")
-    a2.set_xlabel("Py (Px = 0)")
-    a2.grid(alpha=0.3)
-    fig.suptitle("Kingslake double Gauss, 14°, ray aiming off: the two definitions of W", fontsize=11)
-    fig.tight_layout()
-    save(fig, "hopkins-definitions.svg")
-
-
 # ── markdown to print HTML ────────────────────────────────────────────────────────────────
 
 def inline(s: str) -> str:
@@ -813,7 +780,6 @@ def main(out_dir: str) -> None:
     rayces_cooke(out)
     rayces_convergence()
     hopkins_geometry()
-    hopkins_definitions(out)
     for name, title, source in [("wec-method", "WEC method", HERE / "wec-method.md"),
                                 ("rayces-method", "Rayces method", HERE / "rayces-method.md"),
                                 ("hopkins-tatian-method", "Hopkins-Tatian method", HERE / "hopkins-tatian-method.md"),
