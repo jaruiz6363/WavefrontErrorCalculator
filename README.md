@@ -70,7 +70,7 @@ The other commands (each prints its options when run without arguments):
 | `Zemax` | Zemax OpticStudio's OPD (OPDC), with Reference OPD "Exit Pupil"; ray aiming off, or `--set RayAiming=RealStop` for real | 6×10⁻⁸ wave aiming off, 1.1×10⁻⁶ real (6×10⁻⁶ at three near-grazing points of US8264785), at 857 points per field |
 | `ZemaxZernike` | OpticStudio's Zernike Standard analysis, with its RMS and P-V | 10⁻⁸ wave, the precision it prints |
 | `LensHHLT` | LensHH-LT, which computes OpticStudio's OPDC: the `Zemax` preset | 2×10⁻⁸ wave aiming off, 7×10⁻⁷ real; RMS and P-V to 10⁻⁶ of their size |
-| `Optiland` | Optiland's wavefront with strategy `chief_ray` | 2×10⁻⁸ wave (7.5×10⁻⁶ on US8264785's aspheres); not the NA 0.3 objective, where Optiland's wavefront has the wrong sign |
+| `Optiland` | Optiland's wavefront with strategy `chief_ray` | 2×10⁻⁸ wave (7.5×10⁻⁶ on US8264785's aspheres); not the NA 0.3 objective, where Optiland's wavefront has the wrong sign (Optiland issue #915, fixed by pull request #916 after the version compared here) |
 
 OSLO has no preset of its own: its conventions are reproduced by switches (`ChiefRay` RealStopCenter, `RayAiming` Aplanatic or AplanaticReference, `ExitPupil` UserRadius with the radius OSLO reports), to 1×10⁻⁸ wave. [`docs/programs.md`](docs/programs.md) gives each program's conventions, how they were found, and the errors that remain under them.
 

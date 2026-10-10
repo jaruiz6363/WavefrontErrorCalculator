@@ -74,7 +74,7 @@ So the per-ray values in these tables are exact to a few 10⁻⁹ wave or better
   - WEC reproduces each program under its own conventions (`docs/verification.md`): Zemax to 6×10⁻⁸ wave at every one of these points with aiming off, LensHH-LT to 2.2×10⁻⁸, and Optiland to 2×10⁻⁸ (7.5×10⁻⁶ on US8264785's aspheres) on all but the objective.
 - **The objective (NA 0.3, entrance pupil behind the object):**
   - Zemax and LensHH-LT agree with WEC to 3×10⁻⁵ wave.
-  - Optiland gives the wavefront with the opposite sign, at (Px, −Py). Its paraxial aimer launches each ray from the object toward the entrance pupil point. That point lies behind the object, so the ray leaves going backward (N < 0) and the pupil's diameter comes out negative.
+  - Optiland gives the wavefront with the opposite sign, at (Px, −Py). Its paraxial aimer launches each ray from the object toward the entrance pupil point. That point lies behind the object, so the ray leaves going backward (N < 0) and the pupil's diameter comes out negative. Reported as Optiland issue #915 and fixed by pull request #916, merged into Optiland's master on 2026-10-10; the values here are from Optiland a3fb3e1b, before the fix.
 - **OSLO names its pupil points differently.** At the same (FY, FX) it traces another ray and refers it to another chief ray, so its column differs mostly for that reason, not by a difference in OPD.
   - On axis, for an object at infinity, it matches WEC to 4×10⁻¹⁰ wave.
   - For a finite object of NA 0.1 or more (the relay and the objective), it spaces (FY, FX) evenly in direction sine across the pupil seen from the object, not across the pupil's plane: 6×10⁻³ and 2×10⁻² wave on axis.

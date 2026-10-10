@@ -450,7 +450,7 @@ Defects found (reading the code, then by test where marked):
   - RMS vs field counts vignetted rays as W = 0.
   - Under `chief_ray`, RMS is taken about zero, so piston is included.
   - The image-space index is fixed at the primary wavelength.
-- **Optiland** (confirmed by test): when a finite object's entrance pupil lies behind it (lens H), each ray is traced from the object towards that pupil, away from the lens. The wavefront comes out with the wrong sign: 0.62 wave instead of −0.48 at the rim on axis, as a defocus test shows and Zemax agrees. Beyond the sign, it differs by up to 7×10⁻² wave.
+- **Optiland** (confirmed by test): when a finite object's entrance pupil lies behind it (lens H), each ray is traced from the object towards that pupil, away from the lens. The wavefront comes out with the wrong sign: 0.62 wave instead of −0.48 at the rim on axis, as a defocus test shows and Zemax agrees. Beyond the sign, it differs by up to 7×10⁻² wave. Reported as Optiland issue #915 and fixed by pull request #916, merged into Optiland's master on 2026-10-10; the comparisons here use Optiland a3fb3e1b, from before the fix.
 - **LensHH-LT:**
   - **Zernike sample positions don't match the map grid** (confirmed by test). The fit assumes `px = −1+2(j+½)/n`, but the map was traced at `px = (j−n/2)/(n/2−½)`: a half-pixel shift and a (n−1)/n scale error, about 1.6% at n = 64. Coefficients move by up to 0.17 wave, and a symmetric on-axis wavefront shows a tilt.
   - Fringe term 37 duplicates term 36 (it should be n = 12).
