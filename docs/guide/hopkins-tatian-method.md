@@ -74,9 +74,11 @@ So a difference of the order of a wave between two calculations, one with each d
 
 ## 5. How the three methods check one another
 
-Each method computes W by a different route: optical path (`wec-method.md`), the rays' slopes in image space (`rayces-method.md`), and the surface-by-surface difference between the ray and the chief ray (this document). Asked for the same definition, they agree:
+Each method computes W by a different route: optical path (`wec-method.md`), the rays' slopes in image space (`rayces-method.md`), and the surface-by-surface difference between the ray and the chief ray (this document). Asked for the same definition, they agree.
 
-| Lens | Largest W (waves) | Hopkins-Tatian − optical path (B), aiming off | aiming real |
+The table compares the Hopkins-Tatian W with the optical-path W, both on definition B, for the same rays: each entry is the largest difference between the two methods over the 857 points of every field of the lens. The check was run twice, once with the rays traced with ray aiming off and once with it on, so that the agreement does not depend on how the rays are aimed; the two columns are not compared with each other. Differences of 10⁻¹¹ to 10⁻⁹ wave are at the level of rounding: the two methods give the same W.
+
+| Lens | Largest W (waves) | Largest difference between the methods (waves), ray aiming off | The same, ray aiming on |
 |---|---|---|---|
 | Kingslake double Gauss | 6.1 | 8.0×10⁻¹¹ | 6.6×10⁻¹¹ |
 | Cooke triplet | 3.7 | 8.8×10⁻¹⁰ | 1.1×10⁻⁹ |
