@@ -145,6 +145,56 @@ public class OptilandParityTests(Xunit.Abstractions.ITestOutputHelper log)
         Assert.True(failures.Count == 0, string.Join("; ", failures));
     }
 
+    /// <summary>
+    /// Fields given to Optiland as IMAGE HEIGHTS rather than angles (an object at infinity). The
+    /// export gives every angle field of the double Gauss to Optiland as the height its real chief
+    /// ray reaches, as a real or a paraxial image height, and records the angle Optiland then
+    /// launches it at; it is the same collimated beam as that angle field, so the wavefront must
+    /// be the same, and it is compared here with this program's at that angle. Exported with the
+    /// change of Optiland pull request #924 (issue #750), and they agree to 10⁻¹⁰ wave. Exported
+    /// from Optiland's master before it, this test fails by 1,847 waves at 10° and 2,573 at 14°
+    /// (both field types), against a wavefront of about 10 waves: Optiland left the launch plane's
+    /// tilt in an image-height field's wavefront (docs/verification.md).
+    /// </summary>
+    [Theory]
+    [InlineData("KingslakeDG_RealImageHeight")]
+    [InlineData("KingslakeDG_ParaxialImageHeight")]
+    public void OptilandsImageHeightFieldsHaveTheWavefrontOfTheirAngle(string name)
+    {
+        var data = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "TestData", "optiland", name + ".json"))).RootElement;
+        var indices = data.GetProperty("indices").EnumerateArray().Select(e => e.GetDouble()).ToArray();
+        var catalog = CatalogLocator.LoadBundled();
+        var system = LensFile.Read(Path.Combine(AppContext.BaseDirectory, "TestData", data.GetProperty("lens").GetString()!), catalog);
+        // Each field at the angle Optiland launched its image height at.
+        foreach (var field in data.GetProperty("fields").EnumerateArray())
+            system.Fields[field.GetProperty("index").GetInt32()].Y = field.GetProperty("angle_deg").GetDouble();
+        int primary = Math.Max(0, system.PrimaryWavelengthIndex);
+        var lens = new LensModel(system, catalog, w => w == primary ? indices : null);
+
+        var failures = new List<string>();
+        foreach (var field in data.GetProperty("fields").EnumerateArray())
+        {
+            int index = field.GetProperty("index").GetInt32();
+            foreach (var set in new[] { "grid", "tangential", "sagittal" })
+            {
+                var r = Read(field.GetProperty(set));
+                var points = Enumerable.Range(0, r.Px.Length).Select(k => new PupilPoint(r.Px[k], r.Py[k], 0.0)).ToList();
+                var ours = WavefrontCalculator.Compute(lens, index, primary, WavefrontOptions.Optiland, new Given(points));
+                double worst = 0.0, size = 0.0;
+                for (int k = 0; k < points.Count; k++)
+                {
+                    if (r.Intensity[k] <= 0.0) continue;
+                    worst = Math.Max(worst, Math.Abs(ours.Samples[k].W - r.Opd[k]));
+                    size = Math.Max(size, Math.Abs(r.Opd[k]));
+                }
+                log.WriteLine($"{name} field {index} ({field.GetProperty("image_height").GetDouble():F4} mm, {field.GetProperty("angle_deg").GetDouble():F6}°) {set}: " +
+                              $"largest |W - Optiland| {worst:E3} waves of {size:F4}");
+                if (worst >= 1e-5) failures.Add($"field {index} {set}: {worst:E3} waves");
+            }
+        }
+        Assert.True(failures.Count == 0, string.Join("; ", failures));
+    }
+
     private static Rays Read(JsonElement e)
     {
         double[] A(string key) => e.GetProperty(key).EnumerateArray().Select(v => v.GetDouble()).ToArray();

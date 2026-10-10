@@ -2,7 +2,14 @@
 
 Run in Optiland's own environment:
 
-    uv run --project <optiland checkout> python verification/optiland/export.py <lens.zmx> <out.json> [rays]
+    uv run --project <optiland checkout> python verification/optiland/export.py <lens.zmx> <out.json> [rays] [--field-type T]
+
+With --field-type real_image_height or paraxial_image_height (an object at infinity), every
+angle field of the lens is given to Optiland instead as an image height: the height at which
+its real chief ray meets the image. Optiland then solves for the angle that reaches it, and
+each field records that height and the angle Optiland launched it at ("image_height",
+"angle_deg"), so the same field can be traced here by angle. An image-height field is the same
+collimated beam as the angle field aimed at the same chief ray, and its wavefront must be the same.
 
 For each field of the lens, at its primary wavelength, it writes Optiland's wavefront with
 strategy "chief_ray" - the default - on its "uniform" distribution and along its tangential and
@@ -24,6 +31,7 @@ import sys
 import warnings
 
 import numpy as np
+import optiland.backend as be
 from optiland.fileio import load_zemax_file
 from optiland.wavefront import Wavefront
 
@@ -42,7 +50,32 @@ def rays(optic, field, wavelength, num_rays, distribution):
     }
 
 
-def main(lens: str, out: str, num_rays: int = 33) -> None:
+def as_image_heights(optic, field_type: str, wavelength: float) -> list[float]:
+    """Redefines the optic's angle fields as image heights of type `field_type`: the height at
+    which each field's real chief ray meets the image. Returns the heights, in field order."""
+    fields = optic.fields.fields
+    max_y = max(abs(f.y) for f in fields) or 1.0
+    heights = []
+    for f in fields:
+        image = optic.trace_generic(0.0, f.y / max_y, 0.0, 0.0, wavelength)
+        heights.append(float(np.asarray(be.to_numpy(image.y)).reshape(-1)[0]))
+    while optic.fields.num_fields:
+        optic.fields.remove(0)
+    optic.fields.set_type(field_type)
+    for h in heights:
+        optic.fields.add(y=h)
+    return heights
+
+
+def launch_angle(optic, hy: float, wavelength: float) -> float:
+    """The angle, in degrees, of the chief ray Optiland launches for normalised field hy."""
+    launch = optic.ray_tracer.ray_generator.generate_rays(0.0, hy, 0.0, 0.0, wavelength)
+    m = float(np.asarray(be.to_numpy(launch.M)).reshape(-1)[0])
+    n = float(np.asarray(be.to_numpy(launch.N)).reshape(-1)[0])
+    return float(np.degrees(np.arctan2(m, n)))
+
+
+def main(lens: str, out: str, num_rays: int = 33, field_type: str | None = None) -> None:
     warnings.simplefilter("ignore")
     optic = load_zemax_file(lens)
     for surface in optic.surfaces.surfaces:
@@ -52,12 +85,14 @@ def main(lens: str, out: str, num_rays: int = 33) -> None:
             if hasattr(geometry, "max_iter"):
                 geometry.max_iter = 10000
     wavelength = optic.primary_wavelength
+    heights = as_image_heights(optic, field_type, wavelength) if field_type else None
     fields = optic.fields.fields
     max_y = max(abs(f.y) for f in fields) or 1.0
     p = optic.paraxial
 
     result = {
         "lens": lens.replace("\\", "/").rsplit("/", 1)[-1],
+        "field_type": field_type or "as in the file",
         "wavelength_um": float(wavelength),
         "indices": np.abs(np.asarray(optic.surfaces.n(wavelength))).tolist(),
         "paraxial": {"efl": float(p.f2()), "epd": float(p.EPD()), "xpl": float(p.XPL()), "xpd": float(p.XPD())},
@@ -73,6 +108,9 @@ def main(lens: str, out: str, num_rays: int = 33) -> None:
             "tangential": rays(optic, field, wavelength, 41, "line_y"),
             "sagittal": rays(optic, field, wavelength, 41, "line_x"),
         })
+        if heights is not None:
+            result["fields"][-1]["image_height"] = heights[index]
+            result["fields"][-1]["angle_deg"] = launch_angle(optic, field[1], wavelength)
 
     # The other wavelengths, each with its own indices: each is referred to its own chief ray
     # in Optiland, while the exit pupil and the image-space index stay the primary's.
@@ -95,4 +133,10 @@ def main(lens: str, out: str, num_rays: int = 33) -> None:
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 else 33)
+    args = sys.argv[1:]
+    kind = None
+    if "--field-type" in args:
+        at = args.index("--field-type")
+        kind = args[at + 1]
+        del args[at:at + 2]
+    main(args[0], args[1], int(args[2]) if len(args) > 2 else 33, kind)

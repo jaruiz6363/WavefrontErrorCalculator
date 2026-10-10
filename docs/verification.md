@@ -128,6 +128,17 @@ Two things had to be held equal for the comparison to be about conventions:
 - **Glass data.** A glass name with no catalog can resolve to different glasses in different programs. The double Gauss file names `F4` and no catalog: Optiland uses n = 1.620047 at 0.5876 µm, while AberrationCalculator's bundled catalog gives 1.616592. That alone changes the on-axis P-V from 0.19 to 4.6 waves. The test therefore uses Optiland's indices, and logs any surface where the two programs' indices differ.
 - **Intersection tolerance.** Optiland gives an even asphere read from a `.zmx` file an intersection tolerance of 10⁻⁶ mm. On the fast lens that moves its OPD by up to 10⁻³ wave. The export script tightens every iterative surface's tolerance to 10⁻¹⁴ mm, and what remains is about 6 nm of path.
 
+### Fields given as image heights (`OptilandsImageHeightFieldsHaveTheWavefrontOfTheirAngle`)
+
+The lens files above give their fields as angles (an object at infinity) or object heights (a finite object), so none of the comparisons above reached Optiland's other field types. For an object at infinity, a field can also be given as a real or a paraxial image height; Optiland then launches the same collimated beam, at the angle that reaches that height. `export.py --field-type real_image_height` (or `paraxial_image_height`) gives each field of the double Gauss to Optiland as the image height its real chief ray reaches, and records the angle Optiland launches it at; the test compares Optiland's wavefront with this program's at that angle, on Optiland's indices.
+
+| Exported from | On axis | 10° | 14° |
+|---|---|---|---|
+| Optiland master 1a3f38cd, before the fix | 7×10⁻¹¹ wave | 1,847 waves | 2,573 waves |
+| Optiland pull request #924 (c8cd0d7c) | 7×10⁻¹¹ wave | 1.2×10⁻¹⁰ wave | 1.2×10⁻¹⁰ wave |
+
+The same for both image-height types, against a wavefront of about 10 waves. Before the fix Optiland left the launch plane's tilt in an off-axis image-height field's wavefront (Optiland issue #750, fixed by pull request #924). This check was added after the issue had been found in Optiland's issue list: WEC's test lenses never gave Optiland an image-height field, so the comparisons above could not have seen it. The test data is the export with the fix.
+
 ## Zemax OpticStudio (`ZemaxParityTests`)
 
 `tests/TestData/zemax` holds OpticStudio 2022 R2's results for the same three lenses:
