@@ -95,6 +95,58 @@ public class ZemaxParityTests(Xunit.Abstractions.ITestOutputHelper log)
         ComparesRayByRay(name, "zemax-opdc", Aimed(data) ? 1e-5 : 1e-7);
     }
 
+    public static IEnumerable<object[]> InfinityResults() =>
+        Results().Where(r => ((string)r[0]).Contains("_Infinity_"));
+
+    /// <summary>
+    /// Hopkins's surface contributions with Tatian's focal shift (<see cref="HopkinsTatian"/>)
+    /// against OpticStudio's OPD with Reference OPD "Infinity", directly: OpticStudio's own pupil
+    /// points, indices, fields and wavelengths, ray aiming as each result was gathered. Tatian's
+    /// focal shift refers W to the foot of the perpendicular from the image point; this is the
+    /// test that OpticStudio's "Infinity" setting computes that same W.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(InfinityResults))]
+    public void HopkinsAndTatiansWIsOpticStudiosInfinityOpd(string name)
+    {
+        var (data, lens) = Load(name);
+        var options = OptionsFor(data, WavefrontOptions.Zemax);
+        double tolerance = Aimed(data) ? 5e-6 : 1e-7;
+        double overall = 0.0;
+        int compared = 0;
+        var failures = new List<string>();
+        foreach (var w in data.GetProperty("wavelengths").EnumerateArray())
+        {
+            int wave = w.GetProperty("index").GetInt32();
+            foreach (var f in w.GetProperty("fields").EnumerateArray())
+            {
+                int field = f.GetProperty("index").GetInt32();
+                var sets = f.GetProperty("fans").EnumerateObject().Select(p => (p.Name, p.Value)).Append(("map", f.GetProperty("map")));
+                foreach (var (set, rays) in sets)
+                {
+                    double[] A(string key) => rays.GetProperty(key).EnumerateArray()
+                        .Select(v => v.ValueKind == JsonValueKind.Number ? v.GetDouble() : double.NaN).ToArray();
+                    var px = A("px"); var py = A("py"); var opd = A("opd");
+                    var vignetted = rays.GetProperty("vignetted").EnumerateArray().Select(v => v.GetBoolean()).ToArray();
+                    var points = Enumerable.Range(0, px.Length).Select(k => new PupilPoint(px[k], py[k], 0.0)).ToList();
+                    var ht = HopkinsTatian.Compute(lens, field, wave, options, new Sampling.Given(points));
+                    double worst = 0.0;
+                    for (int k = 0; k < points.Count; k++)
+                    {
+                        if (vignetted[k] || double.IsNaN(ht[k].Total)) continue;
+                        worst = Math.Max(worst, Math.Abs(ht[k].Total - opd[k]));
+                        compared++;
+                    }
+                    overall = Math.Max(overall, worst);
+                    if (worst >= tolerance) failures.Add($"wave {wave} field {field} {set}: {worst:E3} waves");
+                }
+            }
+        }
+        log.WriteLine($"{name}: {compared} rays, largest |Hopkins-Tatian - OpticStudio| {overall:E3} waves");
+        Assert.True(compared > 0);
+        Assert.True(failures.Count == 0, string.Join("; ", failures.Take(10)));
+    }
+
     private void ComparesRayByRay(string name, string folder, double tolerance)
     {
         var (data, lens) = Load(name, folder);
