@@ -48,6 +48,35 @@ public class HopkinsTatianTests(Xunit.Abstractions.ITestOutputHelper log)
         Assert.True(worstJoin < 1e-8, $"{worstJoin:E3} waves");
     }
 
+    /// <summary>
+    /// Hopkins's surface contributions with his OWN focal shift (1952 eq. 13), onto the sphere
+    /// about the image point through the real exit pupil (<see cref="ExitPupil.RealChief"/>): taken
+    /// exactly it is the optical-path W on that sphere; as printed it drops δ², which costs 10⁻⁴ to
+    /// 10⁻² wave on these lenses, growing with W.
+    /// </summary>
+    [Theory]
+    [InlineData("KingslakeDG", 1e-3)]
+    [InlineData("Cooke_40deg_FC", 2e-4)]
+    [InlineData("US8264785_Ex4", 2e-2)]
+    [InlineData("Relay_1to1", 1e-4)]
+    [InlineData("Objective_NA03_5x", 1e-4)]
+    public void HopkinssOwnFocalShiftGivesTheRealExitPupilSpheresW(string lensName, double printedTolerance)
+    {
+        var lens = LensModel.Read(Path.Combine(AppContext.BaseDirectory, "TestData", lensName + ".zmx"));
+        int field = lens.System.Fields.Count - 1;
+        var options = Options(RayAiming.Paraxial) with { ExitPupil = ExitPupil.RealChief };
+        var points = HopkinsTatian.Compute1952(lens, field, lens.PrimaryWavelength, options, Points);
+        double exact = 0.0, printed = 0.0;
+        foreach (var p in points.Where(p => !double.IsNaN(p.ByPath)))
+        {
+            if (!double.IsNaN(p.Exact)) exact = Math.Max(exact, Math.Abs(p.Exact - p.ByPath));
+            printed = Math.Max(printed, Math.Abs(p.Printed - p.ByPath));
+        }
+        log.WriteLine($"{lensName}: |exact - path| {exact:E3}, |eq. 13 - path| {printed:E3} waves");
+        Assert.True(exact < 1e-8, $"{exact:E3} waves");
+        Assert.True(printed < printedTolerance, $"{printed:E3} waves");
+    }
+
     [Fact]
     public void TheChiefRayHasNoAberration()
     {

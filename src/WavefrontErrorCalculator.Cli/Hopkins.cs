@@ -31,11 +31,13 @@ internal static class Hopkins
         string lensPath = args[0];
         var options = WavefrontOptions.Reference;
         string? pointsPath = null, csv = null;
+        bool hopkins1952 = false;
         for (int k = 1; k < args.Length; k++)
         {
             string Next() => k + 1 < args.Length ? args[++k] : throw new ArgumentException($"{args[k]} needs a value");
             switch (args[k])
             {
+                case "--1952": hopkins1952 = true; break;
                 case "--points": pointsPath = Next(); break;
                 case "--preset": options = WavefrontOptions.Preset(Next()); break;
                 case "--set": options = Program.Set(options, Next()); break;
@@ -48,6 +50,7 @@ internal static class Hopkins
         var targets = pointsPath != null ? Rayces.PointsOf(pointsPath) : Rayces.DiskPoints();
         var sampling = new Sampling.Given(targets.Select(t => new PupilPoint(t.Item1, t.Item2, 0.0)).ToList());
         int w = lens.PrimaryWavelength;
+        if (hopkins1952) return Run1952(lens, lensPath, options, sampling, targets.Count, w, csv, output);
         output.WriteLine($"{Path.GetFileName(lensPath)}: {targets.Count} pupil points,{Program.Describe(options)}; preset exit pupil {options.ExitPupil}");
         using var writer = csv != null ? new StreamWriter(csv) { NewLine = "\n" } : null;
         writer?.WriteLine("field,px,py,hopkins,focal_shift,hopkins_tatian,path_infinite,join_shift,preset_sphere");
@@ -79,6 +82,44 @@ internal static class Hopkins
                              $"|preset sphere - Hopkins-Tatian| up to {apart:E3} waves");
         }
         output.WriteLine($"largest |Hopkins-Tatian - path| {overall:E3} waves");
+        return 0;
+    }
+
+    /// <summary>
+    /// <c>--1952</c>: Hopkins's own focal shift (eq. 13) instead of Tatian's, onto the options'
+    /// reference sphere through the exit pupil, exactly and as printed, against the optical-path W
+    /// on that sphere.
+    /// </summary>
+    private static int Run1952(LensModel lens, string lensPath, WavefrontOptions options, Sampling sampling, int count,
+                               int w, string? csv, TextWriter output)
+    {
+        output.WriteLine($"{Path.GetFileName(lensPath)}: {count} pupil points, Hopkins 1952 focal shift onto the sphere through E′ = {options.ExitPupil},{Program.Describe(options)}");
+        using var writer = csv != null ? new StreamWriter(csv) { NewLine = "\n" } : null;
+        writer?.WriteLine("field,px,py,hopkins,exact,printed,path");
+        double worstExact = 0.0, worstPrinted = 0.0;
+        for (int f = 0; f < lens.System.Fields.Count; f++)
+        {
+            var points = HopkinsTatian.Compute1952(lens, f, w, options, sampling);
+            double exact = 0.0, printed = 0.0, largest = 0.0;
+            int compared = 0, unfound = 0;
+            foreach (var p in points)
+            {
+                writer?.WriteLine(string.Join(",", new double[] { f, p.Px, p.Py, p.Hopkins, p.Exact, p.Printed, p.ByPath }
+                    .Select(v => v.ToString("R", CultureInfo.InvariantCulture))));
+                if (double.IsNaN(p.ByPath) || double.IsNaN(p.Printed)) continue;
+                compared++;
+                largest = Math.Max(largest, Math.Abs(p.ByPath));
+                printed = Math.Max(printed, Math.Abs(p.Printed - p.ByPath));
+                if (double.IsNaN(p.Exact)) unfound++;
+                else exact = Math.Max(exact, Math.Abs(p.Exact - p.ByPath));
+            }
+            worstExact = Math.Max(worstExact, exact);
+            worstPrinted = Math.Max(worstPrinted, printed);
+            output.WriteLine($"  field {lens.System.Fields[f].Y.ToString("0.###", CultureInfo.InvariantCulture)}: {compared} points, " +
+                             $"|exact shift - path| {exact:E3}, |eq. 13 as printed - path| {printed:E3}, |W| up to {largest:F4} waves" +
+                             (unfound > 0 ? $" ({unfound} too near the chief ray for the exact shift)" : ""));
+        }
+        output.WriteLine($"largest |exact - path| {worstExact:E3}, |eq. 13 - path| {worstPrinted:E3} waves");
         return 0;
     }
 }

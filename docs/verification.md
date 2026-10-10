@@ -61,6 +61,10 @@ A program that reports this W and one that reports W on a reference sphere throu
 
 So a difference of about a wave between a Hopkins-Tatian program and OPDC, at a few waves of aberration, is a difference of definition and not an error in either; with Reference OPD "Infinity", OpticStudio reports Hopkins and Tatian's W.
 
+### Hopkins 1952 without Tatian (`HopkinssOwnFocalShiftGivesTheRealExitPupilSpheresW`, `wfe hopkins --1952`)
+
+Hopkins's own focal shift (1952 eq. 13) refers Ω to the sphere about the image point that cuts the chief ray in the exit pupil, measured along the ray: the definition of the optical-path W on a sphere through E′. With E′ in the real exit pupil (`ExitPupil=RealChief`), the shift taken exactly agrees with the optical path to 1.3×10⁻¹⁰ wave (double Gauss), 8×10⁻¹⁰ (Cooke), 6.4×10⁻⁹ (US8264785), 2×10⁻¹⁰ (relay), 1.3×10⁻¹⁰ (objective), 6.4×10⁻¹¹ and 6×10⁻¹⁰ on the singlets. Eq. 13 as printed drops δ², δ the along-ray distance between the two spheres, and that costs, at the largest field: 4.5×10⁻⁴ wave (double Gauss, W 6.4), 7.5×10⁻⁵ (Cooke, W 3.5), 1.2×10⁻² (US8264785, W 2.9), 3.5×10⁻⁵ (relay), 3.3×10⁻⁵ (objective), and tens to hundreds of waves on the singlets with a thousand. A program using Hopkins 1952 with the real exit pupil therefore agrees with this program's `RealChief` sphere to that approximation, and differs from Hopkins-Tatian much as OPDC does (double Gauss 0.51, US8264785 0.82, Cooke 0.035 wave at the largest field): the real and paraxial exit pupils are close, the infinite reference is not.
+
 ## Cases with exact answers (`AnalyticTests`, `SwitchTests`)
 
 | Case | Expected | Result |
