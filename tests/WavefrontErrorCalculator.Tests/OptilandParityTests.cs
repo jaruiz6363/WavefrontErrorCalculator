@@ -151,7 +151,7 @@ public class OptilandParityTests(Xunit.Abstractions.ITestOutputHelper log)
     /// ray reaches, as a real or a paraxial image height, and records the angle Optiland then
     /// launches it at; it is the same collimated beam as that angle field, so the wavefront must
     /// be the same, and it is compared here with this program's at that angle. Exported with the
-    /// change of Optiland pull request #924 (issue #750), and they agree to 10⁻¹⁰ wave. Exported
+    /// change of Optiland pull request #924 (issue #750; merged 2026-10-11), and they agree to 10⁻¹⁰ wave. Exported
     /// from Optiland's master before it, this test fails by 1,847 waves at 10° and 2,573 at 14°
     /// (both field types), against a wavefront of about 10 waves: Optiland left the launch plane's
     /// tilt in an image-height field's wavefront (docs/verification.md).

@@ -135,9 +135,9 @@ The lens files above give their fields as angles (an object at infinity) or obje
 | Exported from | On axis | 10° | 14° |
 |---|---|---|---|
 | Optiland master 1a3f38cd, before the fix | 7×10⁻¹¹ wave | 1,847 waves | 2,573 waves |
-| Optiland pull request #924 (c8cd0d7c) | 7×10⁻¹¹ wave | 1.2×10⁻¹⁰ wave | 1.2×10⁻¹⁰ wave |
+| Optiland pull request #924 (c8cd0d7c), since merged | 7×10⁻¹¹ wave | 1.2×10⁻¹⁰ wave | 1.2×10⁻¹⁰ wave |
 
-The same for both image-height types, against a wavefront of about 10 waves. Before the fix Optiland left the launch plane's tilt in an off-axis image-height field's wavefront (Optiland issue #750, fixed by pull request #924). This check was added after the issue had been found in Optiland's issue list: WEC's test lenses never gave Optiland an image-height field, so the comparisons above could not have seen it. The test data is the export with the fix.
+The same for both image-height types, against a wavefront of about 10 waves. Before the fix Optiland left the launch plane's tilt in an off-axis image-height field's wavefront (Optiland issue #750, fixed by pull request #924, merged into Optiland's master on 2026-10-11). This check was added after the issue had been found in Optiland's issue list: WEC's test lenses never gave Optiland an image-height field, so the comparisons above could not have seen it. The test data is the export with the fix.
 
 ## Zemax OpticStudio (`ZemaxParityTests`)
 
