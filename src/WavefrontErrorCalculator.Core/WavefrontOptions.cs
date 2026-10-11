@@ -237,6 +237,15 @@ public sealed record WavefrontOptions
     /// <summary>The reference sphere's radius, for <see cref="ExitPupil.UserRadius"/>.</summary>
     public double? UserReferenceRadius { get; init; }
 
+    /// <summary>
+    /// The paraxial exit pupil's position from the image, positive to the right, as another
+    /// program reports it (OpticStudio's EXPP), to use in place of this program's own wherever the
+    /// exit-pupil plane is needed. For a comparison, like using that program's refractive
+    /// indices: OpticStudio's value differs from the paraxial trace's by up to 1e-4 mm, which an
+    /// afocal image, referred to a plane through the pupil, shows (docs/programs.md).
+    /// </summary>
+    public double? ExitPupilPosition { get; init; }
+
     /// <summary>Hopkins and Welford.</summary>
     public static WavefrontOptions Reference { get; } = new();
 

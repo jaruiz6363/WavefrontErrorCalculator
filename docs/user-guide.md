@@ -152,6 +152,7 @@ The switches:
 |---|---|
 | `ReferenceCenter` | `ChiefRay`, `Gaussian`, `Centroid`, `BestFitSphere` |
 | `ExitPupil` | `RealChief`, `ParaxialAxial`, `ParaxialChiefIntersect`, `Infinite`, `UserDistance` (with `UserExitPupilDistance`), `ParaxialDistance`, `UserRadius` (with `UserReferenceRadius`), `LastSurface`, `ImageSurface` (OpticStudio's "Absolute": the path to the image surface, no sphere) |
+| `ExitPupilPosition` | unset (the paraxial trace's); a distance from the image in mm, positive to the right, as another program reports it (OpticStudio's EXPP), for the exit-pupil plane. An afocal image needs it to match OpticStudio closer than 10⁻⁵ wave (programs.md). |
 | `RayAiming` | `RealStop`, `Paraxial`, `ExitSphereGrid`, `Aplanatic`, `AplanaticReference`, `ParaxialReference` |
 | `ChiefRay` | `VignettedCenter`, `StopCenter`, `RealStopCenter` |
 | `PupilCoordinates` | `Canonical`, `Launch`, `ExitSphere`, `LaunchRefined` |

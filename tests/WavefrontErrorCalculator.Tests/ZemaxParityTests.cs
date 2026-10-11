@@ -27,17 +27,24 @@ public class ZemaxParityTests(Xunit.Abstractions.ITestOutputHelper log)
     {
         "KingslakeDG_ExitPupil_Off", "KingslakeDG_Infinity_Off", "KingslakeDG_Absolute_Off", "KingslakeDG_ExitPupil_Real",
         "Cooke_40deg_FC_ExitPupil_Off", "US8264785_Ex4_ExitPupil_Off", "Relay_1to1_ExitPupil_Off", "Objective_NA03_5x_ExitPupil_Off",
+        "Keplerian_5x_ExitPupil_Real", "Galilean_4x_ExitPupil_Real",
     }.Select(n => new object[] { n });
 
     /// <summary>The Zemax preset with the switches the result's own settings call for.</summary>
     private static WavefrontOptions OptionsFor(JsonElement data, WavefrontOptions preset)
     {
         var settings = data.GetProperty("settings");
-        var exitPupil = settings.GetProperty("reference_opd").GetString() switch
+        // An afocal image is referred to the plane across the primary chief ray through its crossing of
+        // the exit pupil plane, under "Exit Pupil" and "Infinity" alike; "Absolute" puts that plane at
+        // the image surface instead, and "Absolute2" takes the path to the image surface itself.
+        bool afocal = Afocal(data);
+        string reference = settings.GetProperty("reference_opd").GetString()!;
+        var exitPupil = reference switch
         {
             "ExitPupil" => ExitPupil.ParaxialChiefIntersect,
-            "Infinity" => ExitPupil.Infinite,
-            "Absolute" or "Absolute2" => ExitPupil.ImageSurface,
+            "Infinity" => afocal ? ExitPupil.ParaxialChiefIntersect : ExitPupil.Infinite,
+            "Absolute" => afocal ? ExitPupil.ParaxialChiefIntersect : ExitPupil.ImageSurface,
+            "Absolute2" => ExitPupil.ImageSurface,
             var s => throw new NotSupportedException($"Reference OPD {s}"),
         };
         var aiming = settings.GetProperty("ray_aiming").GetString() switch
@@ -46,7 +53,12 @@ public class ZemaxParityTests(Xunit.Abstractions.ITestOutputHelper log)
             "Real" => RayAiming.RealStop,
             var s => throw new NotSupportedException($"ray aiming {s}"),
         };
-        return preset with { ExitPupil = exitPupil, RayAiming = aiming };
+        // The plane through the exit pupil shows the 1e-7 to 1e-4 mm by which OpticStudio's exit pupil
+        // differs from the paraxial trace's, so OpticStudio's own is used, as its indices are.
+        double? pupil = !afocal ? null
+            : reference == "Absolute" ? 0.0
+            : data.GetProperty("paraxial").GetProperty("exit_pupil_position").GetDouble();
+        return preset with { ExitPupil = exitPupil, RayAiming = aiming, ExitPupilPosition = pupil };
     }
 
     private static (JsonElement Data, LensModel Lens) Load(string name, string folder = "zemax")
@@ -60,6 +72,9 @@ public class ZemaxParityTests(Xunit.Abstractions.ITestOutputHelper log)
         return (data, lens);
     }
 
+    private static bool Afocal(JsonElement data) =>
+        data.GetProperty("settings").TryGetProperty("afocal_image_space", out var a) && a.GetBoolean();
+
     private static bool Aimed(JsonElement data) => data.GetProperty("settings").GetProperty("ray_aiming").GetString() != "Off";
 
     [Theory]
@@ -68,9 +83,11 @@ public class ZemaxParityTests(Xunit.Abstractions.ITestOutputHelper log)
     {
         // With ray aiming on, the two programs' aiming iterations stop at slightly different
         // places: what is left grows with the slope of W, to 2.5e-6 wave where W spans over 160
-        // waves across the pupil (Absolute; docs/programs.md).
+        // waves across the pupil (Absolute; docs/programs.md), and to 5e-6 wave under an afocal lens's
+        // Absolute 2, where the image surface's tilt against the beam makes W span 1,400 waves.
         var (data, _) = Load(name);
-        ComparesRayByRay(name, "zemax", Aimed(data) ? 5e-6 : 1e-7);
+        bool steep = Afocal(data) && data.GetProperty("settings").GetProperty("reference_opd").GetString() == "Absolute2";
+        ComparesRayByRay(name, "zemax", Aimed(data) ? (steep ? 1e-5 : 5e-6) : 1e-7);
     }
 
     public static IEnumerable<object[]> OpdcResults() =>
@@ -95,8 +112,9 @@ public class ZemaxParityTests(Xunit.Abstractions.ITestOutputHelper log)
         ComparesRayByRay(name, "zemax-opdc", Aimed(data) ? 1e-5 : 1e-7);
     }
 
+    /// <summary>The "Infinity" results of focal lenses: Tatian's focal shift has no afocal form.</summary>
     public static IEnumerable<object[]> InfinityResults() =>
-        Results().Where(r => ((string)r[0]).Contains("_Infinity_"));
+        Results().Where(r => ((string)r[0]).Contains("_Infinity_") && !Afocal(Load((string)r[0]).Data));
 
     /// <summary>
     /// Hopkins's surface contributions with Tatian's focal shift (<see cref="HopkinsTatian"/>)

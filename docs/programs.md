@@ -12,9 +12,10 @@ program used, and WavefrontErrorCalculator traces with them (result-format.md).
 
 **Version:** OpticStudio 2022 R2.02 (the API reports 22.2.2).
 
-**Data:** `tests/TestData/zemax/`. There are 40 files: five lenses (the Kingslake double Gauss,
-the 40° Cooke triplet with fixed apertures, the fast lens with two even aspheres, and two finite
-conjugates, a 1:1 relay and an NA 0.3 objective), each with:
+**Data:** `tests/TestData/zemax/`. There are 56 files: seven lenses (the Kingslake double Gauss,
+the 40° Cooke triplet with fixed apertures, the fast lens with two even aspheres, two finite
+conjugates, a 1:1 relay and an NA 0.3 objective, and two afocal telescopes, a 5× Keplerian and a
+4× Galilean, with OpticStudio's Afocal Image Space set), each with:
 - Reference OPD (System Explorer → Advanced) set to each of Exit Pupil, Infinity, Absolute and
   Absolute 2;
 - ray aiming Off and Real.
@@ -36,7 +37,8 @@ The files hold:
 | (always) | `Sign` Hopkins (chief − ray), `ChiefRay` StopCenter, `PupilCoordinates` Launch, `Weighting` PerRay, `ReferenceCenter` ChiefRay |
 | Reference OPD: Exit Pupil (the default) | `ExitPupil` ParaxialChiefIntersect: the sphere about the chief ray's image point, through the chief ray's crossing of the paraxial exit-pupil plane |
 | Reference OPD: Infinity | `ExitPupil` Infinite: the plane across the chief ray |
-| Reference OPD: Absolute, Absolute 2 | `ExitPupil` ImageSurface: no reference sphere; each ray's optical path is taken to the image surface where it lands. The two settings gave the same numbers on every test lens. |
+| Reference OPD: Absolute, Absolute 2 | `ExitPupil` ImageSurface: no reference sphere; each ray's optical path is taken to the image surface where it lands. The two settings gave the same numbers on every focal test lens. |
+| Afocal Image Space | see "Afocal mode" below |
 | Ray aiming: Off | `RayAiming` Paraxial: unaimed, launched at the paraxial entrance pupil |
 | Ray aiming: Paraxial | not tested |
 | Ray aiming: Real | `RayAiming` RealStop, with the stop's radius taken where the primary wavelength's real axial marginal ray crosses it. On axis, an aimed ray is then the ray launched at the same pupil coordinates. |
@@ -76,8 +78,35 @@ Reference OPD settings and with ray aiming on, and the triplet and the fast lens
 - the Wavefront Map analysis;
 - the Fringe and Annular sets;
 - vignetting factors;
-- afocal mode;
 - a defocused image surface.
+
+### Afocal mode
+
+With Afocal Image Space set, OpticStudio refers each ray to a plane rather than a sphere. Found on
+the two telescopes, at every field and wavelength:
+- **Exit Pupil and Infinity** give the same OPD. The plane is perpendicular to the primary
+  wavelength's chief ray, through that ray's crossing of the paraxial exit-pupil plane: WEC's
+  afocal reference (method.md §4.3) with `ExitPupil` ParaxialChiefIntersect. One plane serves every
+  wavelength, and each wavelength's OPD is still zero on its own chief ray.
+- **Absolute** puts the same plane through the chief ray's crossing of the image surface instead:
+  `ExitPupil` ParaxialChiefIntersect with `ExitPupilPosition` 0.
+- **Absolute 2** takes the path to the image surface itself, as for a focal lens: `ExitPupil`
+  ImageSurface. Off axis, the image surface is tilted against the beam, and W spans up to 1,400
+  waves.
+- **The Zernike Standard Coefficients analysis** is the `ZemaxZernike` preset: each wavelength has
+  its own plane, across its own chief ray.
+
+**The exit pupil's position.** OpticStudio's (the EXPP operand) differs from the paraxial trace's
+on every test lens, focal ones included: by 3×10⁻⁸ mm on the relay up to 1.4×10⁻⁴ mm on the
+Keplerian. No rule for it was found: it is not where a real chief ray at any one small field crosses
+the axis. A focal image hardly feels the difference. A plane through the pupil does, by up to
+2×10⁻⁵ wave on the Keplerian. The comparison therefore gives WEC OpticStudio's value, through
+`ExitPupilPosition`, as it gives it OpticStudio's refractive indices.
+
+**Agreement,** under all four Reference OPD settings:
+- Ray aiming off: every ray within 5×10⁻¹⁰ wave.
+- Ray aiming real: 2×10⁻⁷ wave; 5×10⁻⁶ under Absolute 2, where W is steepest.
+- The Zernike analysis, ray aiming real: RMS, P-V and all 37 coefficients to 2×10⁻⁸ wave.
 
 ### Glass
 

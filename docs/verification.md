@@ -141,7 +141,7 @@ The same for both image-height types, against a wavefront of about 10 waves. Bef
 
 ## Zemax OpticStudio (`ZemaxParityTests`)
 
-`tests/TestData/zemax` holds OpticStudio 2022 R2's results for the same three lenses:
+`tests/TestData/zemax` holds OpticStudio 2022 R2's results for the five focal test lenses and the two afocal telescopes (below):
 - under each Reference OPD setting (Exit Pupil, Infinity, Absolute, Absolute 2), with ray aiming off and real;
 - the OPD of its batch ray trace along both fans and over a grid;
 - its Zernike Standard Coefficients analysis, with the RMS and P-V it reports;
@@ -151,12 +151,22 @@ They were gathered outside this repository (method.md §10). The tests trace the
 
 | Comparison | Largest difference, all fields and wavelengths |
 |---|---|
-| OPD, ray aiming off, all 12 results | 1.3×10⁻⁸ wave; the same rays vignetted |
-| OPD, ray aiming real, all 12 results | 5.6×10⁻⁷ wave; 2.5×10⁻⁶ under Absolute, where W spans over 160 waves |
+| OPD, focal lenses, ray aiming off, all 20 results | 1.3×10⁻⁸ wave; the same rays vignetted |
+| OPD, focal lenses, ray aiming real, all 20 results | 5.6×10⁻⁷ wave; 2.5×10⁻⁶ under Absolute, where W spans over 160 waves |
 | Zernike analysis, ray aiming off: RMS, P-V and 37 coefficients (51,000 rays per field and wavelength) | at the 10⁻⁸ wave OpticStudio prints to |
 | The same, ray aiming real | 4×10⁻⁸ wave |
+| Afocal telescopes, OPD, every Reference OPD setting: ray aiming off / real | 5×10⁻¹⁰ / 2×10⁻⁷ wave (5×10⁻⁶ under Absolute 2) |
+| Afocal telescopes, Zernike analysis, ray aiming real | 2×10⁻⁸ wave |
 
 `wfe parity <result.json> --preset Zemax` repeats the OPD comparison for any result file. With `--rays file.md` or `file.csv`, it writes the comparison ray by ray.
+
+### Afocal telescopes
+
+Two telescopes were designed for these tests (`tests/TestData/make_afocal_lenses.js`), with OpticStudio's Afocal Image Space set:
+- `Keplerian_5x`: a cemented f = 150 mm objective and an f = 30 mm cemented eyepiece, EPD 30, fields 0, 1 and 1.5°; the image surface is at the real exit pupil.
+- `Galilean_4x`: a cemented f = 100 mm objective and an f = −25 mm eye lens, EPD 25, fields 0, 1 and 1.5°; the exit pupil is virtual, and the image surface is 12 mm behind the eye lens, where an eye would be.
+
+Each air gap is solved paraxially so that the telescope is afocal. With the image surface at the pupil on one and 31 mm from it on the other, the two lenses tell apart a plane through the pupil from one at the image surface. They confirmed WEC's afocal reference (method.md §4.3) ray by ray; OpticStudio's settings are in `docs/programs.md`. Before them, afocal images had been checked only on confocal paraboloids, whose wavefront is flat.
 
 ### OPDC at every pupil point (`TheZemaxPresetIsOpticStudiosOpdcOperand`)
 

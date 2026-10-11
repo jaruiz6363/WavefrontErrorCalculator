@@ -363,6 +363,8 @@ public static class WavefrontCalculator
         if (!primaryChief.Ok) throw new InvalidOperationException("the primary wavelength's chief ray does not reach the image");
 
         double zXp = ParaxialExitPupilZ(lens);
+        if (o.ExitPupilPosition is double reported && !double.IsInfinity(zXp))
+            zXp = Math.Abs(zXp - reported) <= Math.Abs(zXp + reported) ? reported : -reported;   // in this frame
 
         // E′, first for the ray that sets the pupil plane - the primary's chief when the
         // wavelengths share a focus - then, under PrimaryFocus, moved onto this wavelength's own
@@ -559,10 +561,13 @@ public static class WavefrontCalculator
     private static double TinyField(LensModel lens) => (lens.MaxField > 0.0 ? lens.MaxField : 1.0) * 1e-3;
 
     /// <summary>
-    /// The paraxial exit pupil, as the image-frame z where the chief ray of a vanishing field
-    /// crosses the axis. Measured on real rays rather than read off the paraxial trace so it is
-    /// in the same frame as everything else - a mirror's image space runs backwards along z -
-    /// and Richardson-extrapolated from two small fields to the limit.
+    /// The paraxial exit pupil, as an image-frame z. Its distance from the image is the paraxial
+    /// trace's; which side of the image that is in this frame - a mirror's image space runs
+    /// backwards along z - is read off real rays: where the chief ray of a vanishing field crosses
+    /// the axis, Richardson-extrapolated from two small fields to the limit. That estimate alone
+    /// is good to a few micrometres only, the chief ray of so small a field being all but parallel
+    /// to the axis; an afocal image, referred to a plane through the pupil, is a thousand times
+    /// more sensitive to the plane's place than a focal image is to its sphere's.
     /// </summary>
     public static double ParaxialExitPupilZ(LensModel lens)
     {
@@ -576,7 +581,10 @@ public static class WavefrontCalculator
         }
         double z1 = Z(e), z2 = Z(2 * e);
         if (double.IsInfinity(z1) || double.IsInfinity(z2)) return double.PositiveInfinity;
-        return (4.0 * z1 - z2) / 3.0;
+        double estimate = (4.0 * z1 - z2) / 3.0;
+        double paraxial = (double)lens.Paraxial.ExitPupilPosition;
+        if (double.IsNaN(estimate) || double.IsNaN(paraxial) || double.IsInfinity(paraxial)) return estimate;
+        return Math.Abs(estimate - paraxial) <= Math.Abs(estimate + paraxial) ? paraxial : -paraxial;
     }
 
     /// <summary>

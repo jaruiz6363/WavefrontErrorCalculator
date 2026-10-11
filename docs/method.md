@@ -109,7 +109,7 @@ The last segment ends on the exit reference sphere: solve |P_k + t·**d**_k − 
 
 ### 4.3 Afocal systems
 
-When the image is at infinity, W is referred to a plane through E′ perpendicular to the chief ray, and the transverse aberrations are reported as angular reduced aberrations (H81 §5: the reduced forms stay finite). Auto-detection: the paraxial image distance exceeds 10⁶ × EFL, or the file's afocal flag is set.
+When the image is at infinity, W is referred to a plane through E′ perpendicular to the chief ray (the primary wavelength's under `ChromaticReference` PrimaryFocus and PrimarySphere, so one plane serves every wavelength; each wavelength's own under OwnChief). E′ is where that chief ray crosses the exit-pupil plane under `ExitPupil` ParaxialChiefIntersect. Unlike a sphere's, a plane's W depends on where along the beam it lies, to second order in the rays' angles to the chief ray: on the 5× Keplerian, moving it 1.4×10⁻⁴ mm changes W at the rim of the full field by 2×10⁻⁵ wave. `ExitPupilPosition` sets the pupil plane from another program's figure; OpticStudio's Afocal Image Space is this reference (programs.md). The transverse aberrations are reported as angular reduced aberrations (H81 §5: the reduced forms stay finite). Auto-detection: the file's afocal flag is set, or the paraxial image lies beyond 10¹⁰ mm.
 
 ## 5. Convention switches
 
@@ -383,13 +383,13 @@ Each lens isolates one or two switches:
 | A. Singlet, on axis, f/4 | Baseline; sign; piston handling |
 | B. Fast (f/1.2), non-telecentric, 30° field, strong pupil aberration | `ExitPupil`, `PupilCoordinates`, `Weighting` |
 | C. Double Gauss with ~35% vignetting at the field edge (Powell 1978 system) | `ChiefRay`, `Weighting`, vignetted-ray handling |
-| D. Afocal telescope (Keplerian) | Afocal handling, reference plane |
+| D. Afocal telescopes (`Keplerian_5x.zmx`, `Galilean_4x.zmx`): a 5× Keplerian with its image surface at the real exit pupil, and a 4× Galilean with a virtual exit pupil | Afocal handling, reference plane |
 | E. Microscope objective, NA 0.9 | `Defocus` term; large-aperture effects |
 | F. Achromat at 3 wavelengths | `ChromaticReference`; image index per wavelength |
 | G. 1:1 relay (`Relay_1to1.zmx`): two cemented doublets about a central stop, NA 0.1, object 192 mm, m = −1.0 | Finite conjugate at a near object |
 | H. Objective (`Objective_NA03_5x.zmx`): two cemented doublets, object-space NA 0.3, working distance 11.3 mm, m = −5.0 | Short conjugate at high object-side NA; its virtual entrance pupil lies behind the object (`PupilOrientation`) |
 
-Lenses G and H were designed for these tests in Zemax OpticStudio, from rough starting points, with Schott glass.
+Lenses G and H were designed for these tests in Zemax OpticStudio, from rough starting points, with Schott glass. The telescopes D were laid out by `tests/TestData/make_afocal_lenses.js`, from thin-lens achromats, with their air gaps solved paraxially.
 
 Each lens is stored as `.zmx`, the master copy, and exported to `.json` (Optiland), `.lhlt` (LensHH-LT) and `.len` (OSLO) with AberrationCalculator's writers.
 

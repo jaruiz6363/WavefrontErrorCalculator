@@ -85,7 +85,7 @@ OSLO has no preset of its own: its conventions are reproduced by switches (`Chie
 - **Statistics:** RMS, P-V and Strehl.
 - **Zernike fits:** Standard (Noll) and Fringe.
 - **A change of focus,** by re-tracing or by Hopkins's exact term, or by the paraxial ρ² shortcut for comparison.
-- **Afocal images,** referred to a plane.
+- **Afocal images,** referred to a plane, as OpticStudio's Afocal Image Space does.
 - **Output:** maps, OPD fans and per-ray CSV.
 
 ## How it is verified
@@ -114,4 +114,4 @@ OSLO has no preset of its own: its conventions are reproduced by switches (`Chie
 
 - OpticStudio's third ray-aiming setting, Paraxial, has not been gathered; Off and Real have.
 - The rule by which OSLO sizes its exit-pupil sphere off axis is not identified; WEC takes the radius OSLO reports.
-- Test lenses D to F of `docs/method.md` (afocal, NA 0.9, achromat), Conrady's chromatic mode, and universal-coefficient sampling.
+- Test lenses E and F of `docs/method.md` (NA 0.9, achromat), Conrady's chromatic mode, and universal-coefficient sampling.
