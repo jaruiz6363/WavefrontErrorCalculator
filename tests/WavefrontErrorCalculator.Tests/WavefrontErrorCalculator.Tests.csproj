@@ -21,6 +21,6 @@
 
   <ItemGroup>
     <None Include="..\TestData\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="TestData" />
-    <None Include="..\..\external\AberrationCalculator\catalogs\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="catalogs" />
+    <None Include="$(AberrationCalculatorDir)catalogs\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="catalogs" />
   </ItemGroup>
 </Project>
