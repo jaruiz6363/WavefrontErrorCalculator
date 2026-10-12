@@ -11,6 +11,6 @@
 
   <!-- AberrationCalculator's glass catalogs, for reading lenses. -->
   <ItemGroup>
-    <None Include="..\..\external\AberrationCalculator\catalogs\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="catalogs" />
+    <None Include="$(AberrationCalculatorDir)catalogs/**/*" CopyToOutputDirectory="PreserveNewest" LinkBase="catalogs" />
   </ItemGroup>
 </Project>

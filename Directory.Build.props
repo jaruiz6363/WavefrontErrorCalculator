@@ -11,4 +11,16 @@
     <RepositoryType>git</RepositoryType>
     <Description>Wavefront error from real-ray tracing, as Hopkins and Welford define it, with every convention that makes optical design programs disagree exposed as a switch</Description>
   </PropertyGroup>
+
+  <!-- Where AberrationCalculator's source is: external/AberrationCalculator, unless a repository
+       that carries WavefrontErrorCalculator and AberrationCalculator side by side, as submodules,
+       sets AberrationCalculatorDir in an AberrationCalculator.Location.props above both. Then only
+       its copy of AberrationCalculator builds. -->
+  <PropertyGroup>
+    <_AberrationCalculatorLocation>$([MSBuild]::GetPathOfFileAbove('AberrationCalculator.Location.props', '$(MSBuildThisFileDirectory)..'))</_AberrationCalculatorLocation>
+  </PropertyGroup>
+  <Import Project="$(_AberrationCalculatorLocation)" Condition="'$(_AberrationCalculatorLocation)' != ''" />
+  <PropertyGroup>
+    <AberrationCalculatorDir Condition="'$(AberrationCalculatorDir)' == ''">$(MSBuildThisFileDirectory)external/AberrationCalculator/</AberrationCalculatorDir>
+  </PropertyGroup>
 </Project>
