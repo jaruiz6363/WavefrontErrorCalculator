@@ -85,7 +85,7 @@ public class LensHHLTParityTests(Xunit.Abstractions.ITestOutputHelper log)
     public void TheStatisticsAreLensHHLTsOnItsGrid(string name)
     {
         var (data, lens, options) = Load(name);
-        var (traced, _) = Grid(64);
+        var traced = Grid(64);
         foreach (var w in data.GetProperty("wavelengths").EnumerateArray())
             foreach (var f in w.GetProperty("fields").EnumerateArray())
             {
@@ -99,51 +99,48 @@ public class LensHHLTParityTests(Xunit.Abstractions.ITestOutputHelper log)
     }
 
     /// <summary>
-    /// LensHH-LT fits its Zernike polynomials at px = -1 + 2(j + 1/2)/n, though it traced the map at
-    /// the nodes above: half a node off centre, and (n - 1)/n the scale. The same wavefront fitted at
-    /// those coordinates gives its coefficients; fitted where it was traced, it does not - on axis, a
-    /// tilt of a symmetric wavefront appears.
+    /// LensHH-LT's Zernike coefficients (its Zernike Coefficients analysis, from 1.0.162): fitted on
+    /// its n×n grid's n - 1 nodes a side from -1 to 1, rim included, with each wavelength referred to
+    /// its own chief ray, as OpticStudio's Zernike analysis is. So the ZemaxZernike preset on
+    /// <see cref="Sampling.NodeGrid"/>(63) gives its Standard and Fringe coefficients for grid 64.
     /// </summary>
     [Theory]
-    [InlineData("KingslakeDG_Off")]
-    [InlineData("Cooke_40deg_FC_Off")]
-    public void LensHHLTsZernikeFitIsAtOtherCoordinatesThanItsMap(string name)
+    [MemberData(nameof(Results))]
+    public void TheZemaxZernikePresetIsLensHHLTsZernike(string name)
     {
         var (data, lens, options) = Load(name);
-        var (traced, fitAt) = Grid(64);
+        var zernikeOptions = options with { ChromaticReference = ChromaticReference.OwnChief };
+        var sampling = new Sampling.NodeGrid(63);
+        double worst = 0.0;
         foreach (var w in data.GetProperty("wavelengths").EnumerateArray())
             foreach (var f in w.GetProperty("fields").EnumerateArray())
             {
-                var ours = WavefrontCalculator.Compute(lens, f.GetProperty("index").GetInt32(), w.GetProperty("index").GetInt32(), options, new Sampling.Given(traced));
-                var theirs = f.GetProperty("zernike").GetProperty("coefficients").EnumerateArray().Select(e => e.GetDouble()).ToArray();
-                var relabeled = ours with
+                var ours = WavefrontCalculator.Compute(lens, f.GetProperty("index").GetInt32(), w.GetProperty("index").GetInt32(), zernikeOptions, sampling);
+                foreach (var (key, set) in new[] { ("zernike", ZernikeSet.Standard), ("zernike_fringe", ZernikeSet.Fringe) })
                 {
-                    Samples = ours.Samples.Select((s, k) => s with { Px = fitAt[k].Px, Py = fitAt[k].Py, LaunchPx = fitAt[k].Px, LaunchPy = fitAt[k].Py }).ToList(),
-                };
-                var asLensHHLT = Zernike.Fit(relabeled, ZernikeSet.Standard, theirs.Length);
-                var whereTraced = Zernike.Fit(ours, ZernikeSet.Standard, theirs.Length);
-                double same = theirs.Select((c, k) => Math.Abs(asLensHHLT.Coefficients[k] - c)).Max();
-                double apart = theirs.Select((c, k) => Math.Abs(whereTraced.Coefficients[k] - c)).Max();
-                log.WriteLine($"{name} wave {w.GetProperty("index")} field {f.GetProperty("index")}: fitted as LensHH-LT fits, {same:E2}; fitted where traced, {apart:E2}");
-                Assert.True(same < 1e-2, $"{same:E2}");
-                Assert.True(apart > 1e-2, $"{apart:E2}");
+                    var theirs = f.GetProperty(key).GetProperty("coefficients").EnumerateArray().Select(e => e.GetDouble()).ToArray();
+                    var fit = Zernike.Fit(ours, set, theirs.Length);
+                    double d = theirs.Select((c, k) => Math.Abs(fit.Coefficients[k] - c)).Max();
+                    log.WriteLine($"{name} wave {w.GetProperty("index")} field {f.GetProperty("index")} {set}: {d:E2}");
+                    worst = Math.Max(worst, d);
+                }
             }
+        log.WriteLine($"{name}: largest difference {worst:E2} wave");
+        Assert.True(worst < 1e-6, $"largest Zernike difference {worst:E2} wave");
     }
 
-    /// <summary>LensHH-LT's n×n map: the nodes it traces inside the unit circle, and where its fit puts each.</summary>
-    private static (List<PupilPoint> Traced, List<(double Px, double Py)> FitAt) Grid(int n)
+    /// <summary>LensHH-LT's n×n map: the nodes it traces inside the unit circle.</summary>
+    private static List<PupilPoint> Grid(int n)
     {
         var traced = new List<PupilPoint>();
-        var fitAt = new List<(double, double)>();
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
             {
                 double px = (j - n / 2) / (n / 2.0 - 0.5), py = (i - (n / 2 - 1)) / (n / 2.0 - 0.5);
                 if (px * px + py * py > 1.0) continue;
                 traced.Add(new PupilPoint(px, py, 0.0));
-                fitAt.Add((-1.0 + 2.0 * (j + 0.5) / n, -1.0 + 2.0 * (i + 0.5) / n));
             }
-        return (traced, fitAt);
+        return traced;
     }
     public static IEnumerable<object[]> OpdcResults() =>
         Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "TestData", "lenshh-lt-opdc"), "*.json")

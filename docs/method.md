@@ -425,24 +425,24 @@ Samples on `Canonical` coordinates, together with the reference geometry (h′_S
 The Optiland, Zemax and LensHH-LT columns have been confirmed at every field and wavelength (docs/verification.md, docs/programs.md):
 - the `Optiland` preset reproduces Optiland's own wavefront ray by ray, to 10⁻⁵ wave or better;
 - the `Zemax` and `ZemaxZernike` presets reproduce OpticStudio 2022 R2's OPD, RMS, P-V and Zernike coefficients;
-- the `LensHHLT` preset, which is the `Zemax` one, reproduces LensHH-LT's OPD, RMS and P-V, to 2×10⁻⁸ wave with ray aiming off and 7×10⁻⁷ with it on.
+- the `LensHHLT` preset, which is the `Zemax` one, reproduces LensHH-LT's OPD, RMS and P-V, to 2×10⁻⁸ wave with ray aiming off and 7×10⁻⁷ with it on, afocal telescopes included; with each wavelength referred to its own chief ray, as `ZemaxZernike`, it reproduces LensHH-LT's Zernike coefficients to 2.3×10⁻⁸ wave.
 
 OSLO is still to be determined.
 
-| Switch | Reference (WEC) | Optiland (a3fb3e1b, `chief_ray`) | LensHH-LT (1.0.161) | Zemax (OpticStudio 2022 R2) | OSLO (EDU 6.6) |
+| Switch | Reference (WEC) | Optiland (a3fb3e1b, `chief_ray`) | LensHH-LT (1.0.162) | Zemax (OpticStudio 2022 R2) | OSLO (EDU 6.6) |
 |---|---|---|---|---|---|
 | Sign | chief − ray | chief − ray | chief − ray | chief − ray | chief − ray |
-| Q′ | chief ray | chief ray (centroid and best fit available) | primary-λ chief ray, used for every λ | primary-λ chief ray (OPD fan, ray trace); each λ's own chief ray (Zernike analysis) | each λ's own reference ray, aimed at the real stop's centre |
-| E′ / R′ | real chief (off axis) | paraxial axial XP, primary λ | chief ray ∩ paraxial XP plane, as OpticStudio's OPDC (`ParaxialChiefIntersect`), crossed exactly | chief ray ∩ paraxial XP plane (Reference OPD "Exit Pupil", the default); plane across the chief ray ("Infinity"); none, the path to the image surface ("Absolute"; "Absolute 2" the same on these lenses) | real exit pupil per field (default; radius rule not yet identified); infinity; the reference ray at the last surface |
+| Q′ | chief ray | chief ray (centroid and best fit available) | primary-λ chief ray (OPD fan, wavefront map); each λ's own chief ray (Zernike analysis) | primary-λ chief ray (OPD fan, ray trace); each λ's own chief ray (Zernike analysis) | each λ's own reference ray, aimed at the real stop's centre |
+| E′ / R′ | real chief (off axis) | paraxial axial XP, primary λ | chief ray ∩ paraxial XP plane, as OpticStudio's OPDC (`ParaxialChiefIntersect`), crossed exactly; afocal: the plane across the primary chief ray through that crossing | chief ray ∩ paraxial XP plane (Reference OPD "Exit Pupil", the default); plane across the chief ray ("Infinity"); none, the path to the image surface ("Absolute"; "Absolute 2" the same on these lenses) | real exit pupil per field (default; radius rule not yet identified); infinity; the reference ray at the last surface |
 | Aiming | real stop | paraxial (iterative available) | paraxial EP when off; real stop when on, the stop radius being the real axial marginal ray from the object point | paraxial EP when off; real stop when real, the stop radius being the primary λ's real axial marginal ray; its third setting, ray aiming Paraxial, not tested | aplanatic: direction sines for a near finite object, the pupil plane otherwise; `enp` about the paraxial pupil, `crr` (default) about the reference ray |
 | Chief ray | vignetted centre | stop centre | stop centre (unless VDX/VDY vignetting factors are set) | stop centre (vignetting factors not yet tested) | the reference ray (real stop centre) |
 | Map/fit coordinates | canonical | launch (Px, Py) | launch (Px, Py) | launch (Px, Py) | OSLO fractional coordinates |
-| Weighting | exit area | per ray | per ray, on its map grid px = (j − n/2)/(n/2 − ½); Forbes quadrature for the WAVEX/M/C operands (not compared) | per ray; the analyses sample n − 1 nodes a side, rim included, for "n × n" | each ray once, on its spot-diagram grid (cell centres, 2/17.03 of the pupil, scaled 0.999724) |
-| RMS | standard deviation | RMS about zero; vignetted rays counted as 0 in RMS vs field | standard deviation (piston removed), referenced to the chief ray; afocal: piston + tilt removed | standard deviation ("to chief": piston removed); "to centroid" also removes tilt (not yet compared) | standard deviation about the reference sphere (`ref`); default: after the lateral shift of the reference point that minimises it |
+| Weighting | exit area | per ray | per ray, on its map grid px = (j − n/2)/(n/2 − ½); its Zernike analysis on n − 1 nodes a side, rim included, for "n × n"; Forbes quadrature for the WAVEX/M/C operands (not compared) | per ray; the analyses sample n − 1 nodes a side, rim included, for "n × n" | each ray once, on its spot-diagram grid (cell centres, 2/17.03 of the pupil, scaled 0.999724) |
+| RMS | standard deviation | RMS about zero; vignetted rays counted as 0 in RMS vs field | standard deviation (piston removed), referenced to the chief ray | standard deviation ("to chief": piston removed); "to centroid" also removes tilt (not yet compared) | standard deviation about the reference sphere (`ref`); default: after the lateral shift of the reference point that minimises it |
 | P-V | max − min | not implemented | max − min | max − min over the analysis grid | max − min over the spot-diagram grid |
 | Defocus | re-trace | re-trace | re-trace only (no polynomial term) | not yet tested | TBD |
-| Chromatic | primary Q′ | own chief; n′ at primary λ | one sphere, the primary λ's, for every λ; each λ zero on its own chief ray | OPD fan and ray trace: one sphere, the primary λ's Q′ and E′, each λ zero on its own chief ray; Zernike analysis: each λ's own chief ray | each λ's own reference ray and exit pupil |
-| Zernike | Standard/Fringe, weighted, canonical | Fringe 37, unweighted, launch coordinates | Standard (Noll) and Fringe 37, unweighted, fitted at coordinates other than where the map was traced (below); RMS from the raw map | Standard (Noll), unweighted, launch coordinates | Fringe 36, unweighted, exit-sphere coordinates, angle from y; unit radius the rim ray on axis (off axis not yet identified) |
+| Chromatic | primary Q′ | own chief; n′ at primary λ | OPD fan and wavefront map: one sphere, the primary λ's, for every λ, each λ zero on its own chief ray; Zernike analysis: each λ's own chief ray | OPD fan and ray trace: one sphere, the primary λ's Q′ and E′, each λ zero on its own chief ray; Zernike analysis: each λ's own chief ray | each λ's own reference ray and exit pupil |
+| Zernike | Standard/Fringe, weighted, canonical | Fringe 37, unweighted, launch coordinates | Standard (Noll, up to 231 terms) and Fringe 37, unweighted, launch coordinates, as OpticStudio's Zernike analysis; RMS from the raw map | Standard (Noll), unweighted, launch coordinates | Fringe 36, unweighted, exit-sphere coordinates, angle from y; unit radius the rim ray on axis (off axis not yet identified) |
 
 Defects found (reading the code, then by test where marked):
 
@@ -451,10 +451,6 @@ Defects found (reading the code, then by test where marked):
   - Under `chief_ray`, RMS is taken about zero, so piston is included.
   - The image-space index is fixed at the primary wavelength.
 - **Optiland** (confirmed by test): when a finite object's entrance pupil lies behind it (lens H), each ray is traced from the object towards that pupil, away from the lens. The wavefront comes out with the wrong sign: 0.62 wave instead of −0.48 at the rim on axis, as a defocus test shows and Zemax agrees. Beyond the sign, it differs by up to 7×10⁻² wave. Reported as Optiland issue #915 and fixed by pull request #916, merged into Optiland's master on 2026-10-10; the comparisons here use Optiland a3fb3e1b, from before the fix.
-- **LensHH-LT:**
-  - **Zernike sample positions don't match the map grid** (confirmed by test). The fit assumes `px = −1+2(j+½)/n`, but the map was traced at `px = (j−n/2)/(n/2−½)`: a half-pixel shift and a (n−1)/n scale error, about 1.6% at n = 64. Coefficients move by up to 0.17 wave, and a symmetric on-axis wavefront shows a tilt.
-  - Fringe term 37 duplicates term 36 (it should be n = 12).
-  - Noll terms above 37 fall back to m = 0.
 
 ## 13. Decisions (made 2026-10-04)
 
@@ -472,5 +468,5 @@ Defects found (reading the code, then by test where marked):
 | 1 | Optical path (direct sum), reference geometry, `Reference` preset, OPD fan, RMS/P-V; analytic tests §9.1 (1–4) (**done**) |
 | 2 | Pupil exploration, vignetted chief ray, canonical coordinates, area weights, Zernike; tests §9.1 (5–6) and §9.2 (**done**; `LaunchRefined` and the coordinate-invariance test wait for `ExitSphereGrid` aiming in phase 3) |
 | 3 | All switches; `compare` command; Optiland preset verified on test lenses A–F (**done** except lenses D–F: afocal, NA 0.9, achromat; the preset is confirmed on three lenses — double Gauss, vignetted Cooke triplet, fast aspheric lens — at all fields and wavelengths) |
-| 4 | LensHH-LT and Zemax fingerprinting; presets; `docs/programs.md` (**done** for Zemax: every Reference OPD setting, ray aiming off and real, and the Zernike analysis; and for LensHH-LT: OPD, RMS, P-V and the Zernike fit, ray aiming off and real, on five lenses) |
+| 4 | LensHH-LT and Zemax fingerprinting; presets; `docs/programs.md` (**done** for Zemax: every Reference OPD setting, ray aiming off and real, and the Zernike analysis; and for LensHH-LT: OPD, RMS, P-V and the Zernike analysis, ray aiming off and real, on five lenses and two afocal telescopes) |
 | 5 | OSLO (**done**: OPD at 857 points per field on five lenses, statistics, and the Zernike fit on axis); Hopkins-Tatian cross-check (**done**); `Conrady` chromatic mode; universal-coefficient sampling |

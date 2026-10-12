@@ -185,7 +185,7 @@ def md_to_html(md: str) -> str:
 def main(out: str) -> None:
     parts = []
     parts.append("<h1>OPD with respect to the chief ray: five programs, point by point</h1>")
-    parts.append("<p class='sub'>WavefrontErrorCalculator (WEC), Zemax OpticStudio, LensHH-LT 1.0.161, Optiland and OSLO, "
+    parts.append("<p class='sub'>WavefrontErrorCalculator (WEC), Zemax OpticStudio, LensHH-LT 1.0.162, Optiland and OSLO, "
                  "on the same refractive indices.</p>")
     coverage = ["<table><tr><th>Lens</th><th>Conjugate</th><th>Fields</th><th>Aiming off</th><th>Aiming real</th></tr>"]
     for key, name, conj, unit in LENSES:

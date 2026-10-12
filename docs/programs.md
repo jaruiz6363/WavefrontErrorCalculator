@@ -127,17 +127,18 @@ method.md §12. It holds on the 1:1 relay as on the other lenses.
 
 ## LensHH-LT
 
-**Version:** 1.0.161 (engine 1870903), the released build's assemblies with its Windows native
+**Version:** 1.0.162 (engine a8ad8eb), the released build's assemblies with its Windows native
 core.
 
 **Data:** two sets, gathered from its engine outside this repository, after confirming that the
 gatherer reproduces the engine's own map exactly on the map's nodes.
-- `tests/TestData/lenshh-lt/`: the five test lenses, with ray aiming Off and Real. Each file holds:
+- `tests/TestData/lenshh-lt/`: the five test lenses and the two afocal telescopes, with ray
+  aiming Off and Real. Each file holds:
   - the engine's OPD fans (`OpdFan`, 41 points);
   - its wavefront map on a 16×16 grid, ray by ray, with each node's pupil coordinates as the
     engine traces them, px = (j − n/2)/(n/2 − ½) and py = (i − (n/2 − 1))/(n/2 − ½);
   - the RMS and P-V of its 64×64 map;
-  - its Zernike Standard and Fringe coefficients (37 terms, from the 64×64 map);
+  - its Zernike Standard and Fringe coefficients (37 terms, grid 64);
   - the refractive indices it used.
 - `tests/TestData/lenshh-lt-opdc/`: the OPD of its wavefront map's own computation at the 857
   OPDC points, for the five lenses with ray aiming off and real. The double Gauss is also gathered
@@ -155,12 +156,14 @@ LensHH-LT's per-ray OPD is OpticStudio's OPDC, so the `LensHHLT` preset is the `
 | Ray aiming Off (as a .zmx file is read) | `RayAiming` Paraxial: unaimed, launched at the paraxial entrance pupil |
 | Ray aiming Real | `RayAiming` RealStop, with the stop's radius that of the real axial marginal ray, from the object point for a finite object |
 | An entrance pupil behind the object | `PupilOrientation` EntrancePupilPlane; every ray is launched toward the lens |
+| An afocal lens | WEC's afocal reference: the plane perpendicular to the primary chief ray through its crossing of the paraxial exit-pupil plane, as OpticStudio's Exit Pupil setting (Afocal mode, above); the tilt is kept |
 
 **Agreement** (`LensHHLTParityTests`): the same rays are vignetted, and the OPD agrees to:
 
 | Data | Aiming off | Aiming real |
 |---|---|---|
 | Fans and 16×16 map, five lenses | 2.1×10⁻⁸ wave | 2.3×10⁻⁸ wave; 6.7×10⁻⁷ on US8264785 at full field |
+| Fans and 16×16 map, two afocal telescopes | 3.3×10⁻¹⁰ wave | 1.2×10⁻⁸ wave |
 | The 857 OPDC points, five lenses | 2.2×10⁻⁸ wave | 3.7×10⁻⁷ wave, on US8264785 at full field |
 
 Against OpticStudio's own OPDC values, ray by ray on the same glass, it agrees to 1.1×10⁻⁶ wave,
@@ -172,12 +175,11 @@ entrance pupil lies behind its object.
 
 - **RMS and P-V:** the standard deviation of the 64×64 map, and its max − min. With the `LensHHLT`
   preset at the engine's own 64×64 nodes, they agree to 10⁻⁶ of their size.
-- **Zernike coefficients:** LensHH-LT fits them at px = −1 + 2(j + ½)/n, py = −1 + 2(i + ½)/n,
-  which are half a node from where the map was traced and (n − 1)/n its scale.
-  - Fitted at those coordinates, WavefrontErrorCalculator's wavefront gives LensHH-LT's
-    coefficients (to 10⁻⁶ wave on axis, 5×10⁻³ off axis).
-  - Fitted where it was traced, the coefficients differ by up to 0.17 wave on the double Gauss.
-    On axis, where the wavefront is symmetric, a tilt appears.
+- **Zernike coefficients:** LensHH-LT's Zernike analysis is OpticStudio's. Its "n × n" grid is
+  n − 1 nodes a side from −1 to 1, rim included, and each wavelength is referred to its own chief
+  ray (on an afocal lens, its own plane). The `ZemaxZernike` preset on `Sampling.NodeGrid(63)`
+  gives its Standard and Fringe coefficients for grid 64 to 2.3×10⁻⁸ wave, on the five lenses
+  and the two telescopes, ray aiming off and real, at every field and wavelength.
 
 ### Glass
 

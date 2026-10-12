@@ -184,7 +184,7 @@ OpticStudio stops evaluating a merit function at the first ray that fails, and e
 
 ## LensHH-LT (`LensHHLTParityTests`)
 
-`tests/TestData/lenshh-lt` holds LensHH-LT's results for the five lenses, with ray aiming off and real:
+`tests/TestData/lenshh-lt` holds LensHH-LT's results for the five lenses and the two afocal telescopes, with ray aiming off and real:
 - its OPD fans and a 16×16 wavefront map, ray by ray;
 - the RMS and P-V of its 64×64 map;
 - its Zernike Standard and Fringe coefficients;
@@ -196,9 +196,11 @@ OpticStudio stops evaluating a merit function at the first ray that fails, and e
 |---|---|
 | OPD fans and map, aiming off | 2.1×10⁻⁸ wave; the same rays vignetted |
 | OPD fans and map, aiming real | 2.3×10⁻⁸ wave; 6.7×10⁻⁷ on US8264785 at full field |
+| OPD fans and map, afocal telescopes, aiming off | 3.3×10⁻¹⁰ wave |
+| OPD fans and map, afocal telescopes, aiming real | 1.2×10⁻⁸ wave |
 | OPD at the 857 OPDC points | 2.2×10⁻⁸ wave aiming off; 3.7×10⁻⁷ aiming real |
 | RMS and P-V of the 64×64 map, at LensHH-LT's own nodes | to 10⁻⁶ of their size |
-| Zernike Standard coefficients | reproduced by fitting at LensHH-LT's fit coordinates, which differ from where its map is traced; fitted where traced, they differ by up to 0.17 wave |
+| Zernike Standard and Fringe coefficients | the `ZemaxZernike` preset on 63 nodes a side, every lens and telescope: 2.3×10⁻⁸ wave |
 
 ## Finite conjugates
 
