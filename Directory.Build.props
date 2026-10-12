@@ -21,6 +21,6 @@
   </PropertyGroup>
   <Import Project="$(_AberrationCalculatorLocation)" Condition="'$(_AberrationCalculatorLocation)' != ''" />
   <PropertyGroup>
-    <AberrationCalculatorDir Condition="'$(AberrationCalculatorDir)' == ''">$(MSBuildThisFileDirectory)external\AberrationCalculator\</AberrationCalculatorDir>
+    <AberrationCalculatorDir Condition="'$(AberrationCalculatorDir)' == ''">$(MSBuildThisFileDirectory)external/AberrationCalculator/</AberrationCalculatorDir>
   </PropertyGroup>
 </Project>

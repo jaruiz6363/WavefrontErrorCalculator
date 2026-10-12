@@ -10,7 +10,7 @@
        WavefrontErrorCalculator adds the wavefront: the reference spheres, the pupil coordinates,
        and every convention for turning optical paths into an aberration. -->
   <ItemGroup>
-    <ProjectReference Include="$(AberrationCalculatorDir)src\AberrationCalculator.Core\AberrationCalculator.Core.csproj" />
-    <ProjectReference Include="$(AberrationCalculatorDir)src\AberrationCalculator.IO\AberrationCalculator.IO.csproj" />
+    <ProjectReference Include="$(AberrationCalculatorDir)src/AberrationCalculator.Core/AberrationCalculator.Core.csproj" />
+    <ProjectReference Include="$(AberrationCalculatorDir)src/AberrationCalculator.IO/AberrationCalculator.IO.csproj" />
   </ItemGroup>
 </Project>
