@@ -155,8 +155,9 @@ They were gathered outside this repository (method.md §10). The tests trace the
 | OPD, focal lenses, ray aiming real, all 20 results | 5.6×10⁻⁷ wave; 2.5×10⁻⁶ under Absolute, where W spans over 160 waves |
 | Zernike analysis, ray aiming off: RMS, P-V and 37 coefficients (51,000 rays per field and wavelength) | at the 10⁻⁸ wave OpticStudio prints to |
 | The same, ray aiming real | 4×10⁻⁸ wave |
-| Afocal telescopes, OPD, every Reference OPD setting: ray aiming off / real | 5×10⁻¹⁰ / 2×10⁻⁷ wave (5×10⁻⁶ under Absolute 2) |
-| Afocal telescopes, Zernike analysis, ray aiming real | 2×10⁻⁸ wave |
+| OPD, afocal telescopes, ray aiming off, all 8 results | 5×10⁻¹⁰ wave |
+| OPD, afocal telescopes, ray aiming real, all 8 results | 2×10⁻⁷ wave; 5×10⁻⁶ under Absolute 2 |
+| Zernike analysis, afocal telescopes, ray aiming real | 2×10⁻⁸ wave |
 
 `wfe parity <result.json> --preset Zemax` repeats the OPD comparison for any result file. With `--rays file.md` or `file.csv`, it writes the comparison ray by ray.
 
