@@ -416,9 +416,19 @@ How each program's data is obtained:
   
   OSLO's results are exported by hand.
 
-## 11. Ready for diffraction (not in v1)
+## 11. Diffraction reference
 
-Samples on `Canonical` coordinates, together with the reference geometry (h′_S, h′_T, N′, R′), are exactly the inputs needed for PSF/MTF in Hopkins form (HY70 eq. 29; H81 eqs. 10.11–10.26; M71 eq. 4.15). A later version, or another consumer, can build the pupil function f = exp(i2πW/λ) without re-deriving the coordinates.
+`Diffraction` computes the PSF and the OTF directly from traced rays, without a fast Fourier transform's grids, as a reference for other programs' FFT results.
+
+- **The pupil function in spatial frequencies.** Each ray's point B′ on the exit reference sphere gives the unit vector u from B′ to the sphere's centre Q′, and q = n′u⊥/λ, u⊥ its part in the image plane. The amplitude at Q′ + Δ is the Debye integral U(Δ) = ∫ P(q) e^{2πi q·Δ} d²q, a Fourier transform; the PSF is |U|² and the OTF the autocorrelation of P (Goodman 2005 §6.3; Born & Wolf §8.8).
+- **Illumination.** The pupil is lit uniformly in (Px, Py), as in every program compared. A ray tube carries the energy of dPx dPy to d²q = J dPx dPy, J = |∂q/∂(Px, Py)| from differential rays, so P = J^(−1/2) e^{−2πiW}. No step assumes the map from (Px, Py) to q to be linear or the pupil to be round.
+- **PSF.** The Debye integral summed over an n×n square grid of (Px, Py), at any points of the image plane, or of another plane through Q′ (such as the one perpendicular to the chief ray). It integrates to 1 over the plane.
+- **OTF.** At frequency ν, each transmitting pupil point is paired with the point whose q is q − ν. That point is found by iterating rays onto it, and whether it transmits by tracing it through the apertures, so the only discretisation is the outer sum over the grid.
+
+**Verified** (`DiffractionTests`):
+- A perfect image, a paraboloid at F/10: the MTF is the overlap of two circles, (2/π)(acos v − v√(1 − v²)), to 2×10⁻⁴.
+- The Cooke triplet at 14°, where W spans 4 waves: the OTF from traced partners equals the Fourier transform of the directly summed PSF to 5×10⁻⁴, two routes that share only the rays.
+- The OTF converges with the grid: on that field, to five figures between grids of 256 and 512.
 
 ## 12. Known program behaviours (as found so far)
 
