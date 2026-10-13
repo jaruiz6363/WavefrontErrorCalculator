@@ -277,7 +277,7 @@ public static class WavefrontCalculator
     /// Traces the ray through pupil point (<paramref name="px"/>, <paramref name="py"/>): aimed at
     /// that point of the stop, or launched at that point of the paraxial entrance pupil.
     /// </summary>
-    private static TracedRay TraceAt(LensModel lens, double f, int w, WavefrontOptions o, double px, double py,
+    internal static TracedRay TraceAt(LensModel lens, double f, int w, WavefrontOptions o, double px, double py,
                                      double shift, bool clip, List<string> warnings)
     {
         var clipping = clip ? o.Apertures : ApertureClipping.None;

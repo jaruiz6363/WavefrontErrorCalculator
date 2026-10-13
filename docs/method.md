@@ -430,6 +430,18 @@ How each program's data is obtained:
 - The Cooke triplet at 14°, where W spans 4 waves: the OTF from traced partners equals the Fourier transform of the directly summed PSF to 5×10⁻⁴, two routes that share only the rays.
 - The OTF converges with the grid: on that field, to five figures between grids of 256 and 512.
 
+### 11.1 Geometric MTF
+
+`GeometricMtf` is Kidger's direct summation (Fundamental Optical Design, SPIE 2002, §4.5.3; Proc. SPIE 46, 49, 1974): rays spread evenly over the pupil land at (x, y) on the image plane, and MTF_S(f) = |Σ w e^{−2πi f x}| / Σ w, MTF_T likewise in y. No binning and no FFT; the modulus needs no reference point. Only rays that arrive are summed; several wavelengths are summed together, each ray weighted by its wavelength's weight.
+
+- **The rays** are the wavefront's: traced under the same options, aimed and stopped as `WavefrontCalculator` traces them, the pupil lit uniformly in (Px, Py) as here. They lie on Kidger's pattern: rings of equal area, each cut into equal sectors, one ray at each cell's centre, over the whole pupil. Thirty rings, the default, are within 0.005 of a converged pattern on the Cooke triplet up to 80 cycles/mm at 20°; the error grows with the spot's size times the frequency.
+- **The diffraction limit.** Kidger's correction - multiplying by a perfect lens's MTF, so that a nearly perfect lens is not overstated - is an option, off by default. The perfect lens's MTF, circular or annular (O'Neill 1956), is reported either way, its cutoff, sagittal and tangential, from the spread of direction cosines in the arriving beam.
+
+**Verified** (`GeometricMtfTests`):
+- The sum on a point (1) and on two points (|cos πfd|); the perfect lens's MTF against Haines and King's Table I (Proc. SPIE 13, 105, 1968) and an annulus's against its directly counted autocorrelation.
+- A paraboloid defocused by 1 mm at f/25, a uniform disc of blur: 2J₁(x)/x, x = 2πf r, within 0.003 up to x = 10 (Haines and King's Fig. 2, after Steel 1956). In focus, an MTF of 1 and a cutoff of 2 NA/λ to six figures.
+- **The limit of diffraction**, the check Kidger made of his own programs (Optica Acta 25, 665, 1978, §2.8), where he found 0.02: the diffraction OTF above, computed with the wavelength reduced 100 times and the glass kept at the real one, against the geometric MTF on the Cooke triplet - on axis and at 14°, sagittal and tangential, from 10 to 40 cycles/mm, with rays aimed at the paraxial pupil and at the real stop: within 0.0012. The two share only the traced rays: one sums where they land, the other autocorrelates the pupil function from their optical paths.
+
 ## 12. Known program behaviours (as found so far)
 
 The Optiland, Zemax and LensHH-LT columns have been confirmed at every field and wavelength (docs/verification.md, docs/programs.md):
