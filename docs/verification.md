@@ -227,6 +227,8 @@ On axis, E′ is now the paraxial exit pupil where the chief ray passes its plan
 | E′ on axis, from the image | −45.163 mm (the chief ray's crossing) | −53.766 mm, the nominal lens's |
 | The image moved onto the crossing (tilted 1′ only): rays arriving | 0 of 192 | 192 of 192 |
 
+The stop's radius, measured on a lens built with errors, moves with them: the middle element of the Cooke triplet, which carries the stop, decentered in y changes it to first order and in x only to second, so a decenter in y would resize the stop and one in x would not. `LensModel` now takes the design's radius, `stopHeight`, for such a lens; given it, the two decenters' RMS agree to 10⁻⁹ (`StopHeightTests`). Unperturbed lenses, and callers that give none, are unchanged.
+
 ## OSLO (`OsloParityTests`)
 
 `tests/TestData/oslo` holds OSLO EDU 6.6's results for the five lenses, gathered by hand with a CCL macro kept outside this repository. They cover both ray aiming modes (`enp`, `crr`) and all three reference sphere positions (exit pupil, infinity, last surface): 30 files. The test traces OSLO's own (FY, FX), on OSLO's indices, with the switches `docs/programs.md` lists.
