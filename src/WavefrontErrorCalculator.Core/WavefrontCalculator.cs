@@ -385,6 +385,11 @@ public static class WavefrontCalculator
                 case ExitPupil.UserDistance:
                     return new Vec3(0.0, 0.0, -o.UserExitPupilDistance!.Value * Math.Sign(c.Direction.Z));
                 default:
+                    // On axis, the paraxial exit pupil (eq. 4.31 has no crossing there). On a centred
+                    // lens the chief ray is the axis; on a decentred or tilted one it is all but
+                    // parallel to it, and where it crosses the axis is ill-conditioned - it can land
+                    // on the image itself - so E′ is where the chief ray passes the pupil's plane.
+                    if (f == 0.0) return double.IsFinite(zXp) ? AtZ(c, zXp) : new Vec3(0.0, 0.0, zXp);
                     return AxisPoint(c) ?? new Vec3(0.0, 0.0, zXp);
             }
         }

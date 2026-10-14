@@ -18,7 +18,11 @@ public enum ReferenceCenter
 /// <summary>Which point the exit reference sphere passes through, E′, and so its radius (method.md §5.2).</summary>
 public enum ExitPupil
 {
-    /// <summary>Off axis, where the real chief ray crosses the axis; on axis, the paraxial exit pupil (Hopkins 1981 eq. 4.31).</summary>
+    /// <summary>
+    /// Off axis, where the real chief ray crosses the axis; on axis, the paraxial exit pupil (Hopkins 1981
+    /// eq. 4.31), where the chief ray passes its plane - the axial point on a centred lens, and on a
+    /// decentred or tilted one a point near it, its chief ray crossing the axis at an all but arbitrary place.
+    /// </summary>
     RealChief,
     /// <summary>The axial point of the paraxial exit pupil, at the primary wavelength (Optiland).</summary>
     ParaxialAxial,

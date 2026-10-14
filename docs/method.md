@@ -131,7 +131,7 @@ Each switch has a **reference default** (Hopkins/Welford) plus the alternatives 
 
 | Value | E′ | R′ | Source / user |
 |---|---|---|---|
-| **`RealChief`** (default) | Off axis: the point where the real chief ray crosses the optical axis (closest approach for a skew chief ray). On axis: the paraxial exit pupil. | \|E′Q′\| | H81 §4, eq. 4.31 |
+| **`RealChief`** (default) | Off axis: the point where the real chief ray crosses the optical axis (closest approach for a skew chief ray). On axis (the field of value 0): the paraxial exit pupil, at the point the chief ray passes through its plane. On a centred lens that is the axial point; on a decentred or tilted one, whose on-axis chief ray crosses the axis at an all but arbitrary place, it is a well-defined point near it (`PerturbedTests`). | \|E′Q′\| | H81 §4, eq. 4.31 |
 | `ParaxialAxial` | Axial point of the paraxial exit pupil, at the primary wavelength | \|E′Q′\| | Optiland |
 | `ParaxialChiefIntersect` | Chief ray ∩ the paraxial exit-pupil plane | \|E′Q′\| | H81 §2 general form; OpticStudio and LensHH-LT |
 | `Infinite` | Reference plane perpendicular to the chief ray | ∞ | W86 p. 101 (the eikonal) |
