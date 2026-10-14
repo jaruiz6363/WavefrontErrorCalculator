@@ -86,6 +86,7 @@ OSLO has no preset of its own: its conventions are reproduced by switches (`Chie
 - **Zernike fits:** Standard (Noll) and Fringe.
 - **A change of focus,** by re-tracing or by Hopkins's exact term, or by the paraxial ρ² shortcut for comparison.
 - **Afocal images,** referred to a plane, as OpticStudio's Afocal Image Space does.
+- **The geometric MTF,** by Kidger's direct summation over the same rays, sagittal and tangential, one wavelength or all weighted; it is the diffraction OTF's limit as λ → 0, and checked as that (method.md §11.1).
 - **Output:** maps, OPD fans and per-ray CSV.
 
 ## How it is verified
