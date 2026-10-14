@@ -573,16 +573,29 @@ public static class WavefrontCalculator
     /// is good to a few micrometres only, the chief ray of so small a field being all but parallel
     /// to the axis; an afocal image, referred to a plane through the pupil, is a thousand times
     /// more sensitive to the plane's place than a focal image is to its sphere's.
+    ///
+    /// <para>Each small field's chief ray is taken relative to the axial field's: on a decentered or
+    /// tilted lens the axial chief ray leaves the axis, and the small field's ray is then mostly
+    /// that departure, whose crossing says nothing of the pupil. Relative to it, the ray is the
+    /// field's alone. On a centered lens the axial chief ray is the axis, and nothing changes.</para>
     /// </summary>
     public static double ParaxialExitPupilZ(LensModel lens)
     {
         int w = lens.PrimaryWavelength;
         double e = TinyField(lens);
+        var axial = lens.Trace(0.0, w, 0.0, 0.0);
         double Z(double field)
         {
             var r = lens.Trace(field, w, 0.0, 0.0);
-            if (!r.Ok) return double.NaN;
-            return AxisPoint(r) is Vec3 a ? a.Z : double.PositiveInfinity;
+            if (!r.Ok || !axial.Ok || Math.Abs(r.Direction.Z) < 1e-15 || Math.Abs(axial.Direction.Z) < 1e-15) return double.NaN;
+            // Where the difference of the two rays, across the axis, is least: x and y of each go
+            // as p + (z − z_image) t, with t the ray's slopes.
+            double px = r.ImagePoint.X - axial.ImagePoint.X, py = r.ImagePoint.Y - axial.ImagePoint.Y;
+            double tx = r.Direction.X / r.Direction.Z - axial.Direction.X / axial.Direction.Z;
+            double ty = r.Direction.Y / r.Direction.Z - axial.Direction.Y / axial.Direction.Z;
+            double across = tx * tx + ty * ty;
+            if (across < 1e-24) return double.PositiveInfinity;
+            return r.ImagePoint.Z - (px * tx + py * ty) / across;
         }
         double z1 = Z(e), z2 = Z(2 * e);
         if (double.IsInfinity(z1) || double.IsInfinity(z2)) return double.PositiveInfinity;
@@ -594,16 +607,23 @@ public static class WavefrontCalculator
 
     /// <summary>
     /// The Gaussian image of field <paramref name="f"/> on the image plane: the landing of a
-    /// vanishing field's chief ray, scaled up linearly, extrapolated as above.
+    /// vanishing field's chief ray, scaled up linearly, extrapolated as above. The scaling is of the
+    /// landing relative to the axial field's, which on a decentered or tilted lens is off the axis.
     /// </summary>
     private static Vec3 GaussianImage(LensModel lens, double f, int w, double shift)
     {
         double e = TinyField(lens);
-        Vec3 Scaled(double field)
+        Vec3 Landing(double field)
         {
             var r = lens.Trace(field, w, 0.0, 0.0, ApertureClipping.None, shift);
             if (!r.Ok) throw new InvalidOperationException("a paraxial chief ray does not reach the image");
-            return new Vec3(f / field * r.ImagePoint.X, f / field * r.ImagePoint.Y, r.ImagePoint.Z);
+            return r.ImagePoint;
+        }
+        var a = Landing(0.0);
+        Vec3 Scaled(double field)
+        {
+            var r = Landing(field);
+            return new Vec3(a.X + f / field * (r.X - a.X), a.Y + f / field * (r.Y - a.Y), r.Z);
         }
         var g1 = Scaled(e);
         var g2 = Scaled(2 * e);

@@ -40,7 +40,13 @@ public sealed class LensModel
     /// own glass data this way, so that a difference between two catalogues - 1e-5 in index over
     /// 10 mm of glass is a sixth of a wave - is not mistaken for a difference of convention.
     /// </param>
-    public LensModel(OpticalSystem system, GlassCatalog catalog, Func<int, double[]?>? indices = null)
+    /// <param name="stopHeight">
+    /// The stop's radius to aim at, instead of the one measured on this lens (<see cref="StopHeight"/>):
+    /// for a lens built with errors, the design's. A decentered or tilted element ahead of the stop
+    /// moves where the axial marginal ray crosses it, which would resize the stop to first order in
+    /// a decenter in y and not at all in x; a real stop keeps its size.
+    /// </param>
+    public LensModel(OpticalSystem system, GlassCatalog catalog, Func<int, double[]?>? indices = null, double? stopHeight = null)
     {
         System = system ?? throw new ArgumentNullException(nameof(system));
         if (catalog == null) throw new ArgumentNullException(nameof(catalog));
@@ -64,9 +70,8 @@ public sealed class LensModel
         // wavelength: one aperture, and on axis an aimed ray is the ray launched at the same
         // pupil coordinates (method.md §5.3).
         bool hasStop = system.StopSurfaceIndex >= 1 && system.StopSurfaceIndex <= system.LastOpticalSurface();
-        _stopHeight = new Lazy<double?>(() => hasStop
-            ? StopAimer.RealAxialHeight(System, _indices[PrimaryWavelength], Paraxial) ?? Paraxial.Y[System.StopSurfaceIndex]
-            : null);
+        _stopHeight = new Lazy<double?>(() => !hasStop ? null
+            : stopHeight ?? StopAimer.RealAxialHeight(System, _indices[PrimaryWavelength], Paraxial) ?? Paraxial.Y[System.StopSurfaceIndex]);
         _aimers = new Lazy<StopAimer?>[system.Wavelengths.Count];
         for (int w = 0; w < _aimers.Length; w++)
         {
@@ -99,6 +104,12 @@ public sealed class LensModel
 
     /// <summary>The index of the image space, unsigned.</summary>
     public double ImageIndex(int w) => Math.Abs(_indices[w][System.LastOpticalSurface()]);
+
+    /// <summary>
+    /// The radius of the stop that rays are aimed at: as given, or where the primary wavelength's
+    /// real axial marginal ray crosses the stop, failing that the paraxial one; null with no stop.
+    /// </summary>
+    public double? StopHeight => _stopHeight.Value;
 
     /// <summary>Ray aiming at the stop for this wavelength; null when the lens has no stop.</summary>
     public StopAimer? Aimer(int w) => _aimers[w].Value;
