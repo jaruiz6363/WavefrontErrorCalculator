@@ -127,3 +127,46 @@ public class StopHeightTests
         Assert.NotEqual(Rms(Decentered(true, null)), Rms(Decentered(false, null)), 4);
     }
 }
+
+public class AxialExitPupilTests
+{
+    private static readonly Sampling Grid = new Sampling.GaussQuadrature(8, 24);
+
+    /// <summary>
+    /// The last element, behind the stop, tilted 0.2° about its first vertex, about x or about y:
+    /// both its surfaces tilted, the second moved across by the tilt times the element's thickness.
+    /// AberrationCalculator's tilts about x and y turn opposite ways, so the move is −y or −x.
+    /// </summary>
+    private static LensModel Tilted(bool aboutX)
+    {
+        var lens = LensModel.Read(Path.Combine(AppContext.BaseDirectory, "TestData", "Cooke_40deg_FC.zmx"));
+        double a = 0.2 * Math.PI / 180.0, d = -Math.Sin(a) * lens.System.Surfaces[5].Thickness;
+        foreach (int s in new[] { 5, 6 })
+        {
+            if (aboutX) lens.System.Surfaces[s].TiltX = a; else lens.System.Surfaces[s].TiltY = a;
+        }
+        if (aboutX) lens.System.Surfaces[6].DecenterY = d; else lens.System.Surfaces[6].DecenterX = d;
+        return new LensModel(lens.System, AberrationCalculator.Core.Glass.CatalogLocator.LoadBundled());
+    }
+
+    private static double Rms(LensModel lens, WavefrontOptions o) =>
+        WavefrontCalculator.Compute(lens, 0, lens.PrimaryWavelength, o, Grid).Statistics.RmsStandardDeviation;
+
+    [Fact]
+    public void ATiltedLensKeepsItsExitPupilOnItsSide()
+    {
+        // The axial chief ray of a tilted lens leaves the axis; the small field's chief ray, taken by
+        // itself, then crosses the axis wherever that departure takes it - here behind the image.
+        double nominal = WavefrontCalculator.ParaxialExitPupilZ(LensModel.Read(Path.Combine(AppContext.BaseDirectory, "TestData", "Cooke_40deg_FC.zmx")));
+        Assert.Equal(nominal, WavefrontCalculator.ParaxialExitPupilZ(Tilted(true)), 9);
+        Assert.Equal(nominal, WavefrontCalculator.ParaxialExitPupilZ(Tilted(false)), 9);
+    }
+
+    [Fact]
+    public void OnAxisATiltInXAndInYAreAlike()
+    {
+        Assert.Equal(Rms(Tilted(true), WavefrontOptions.Reference), Rms(Tilted(false), WavefrontOptions.Reference), 9);
+        var gaussian = WavefrontOptions.Reference with { ReferenceCenter = ReferenceCenter.Gaussian };
+        Assert.Equal(Rms(Tilted(true), gaussian), Rms(Tilted(false), gaussian), 9);
+    }
+}
