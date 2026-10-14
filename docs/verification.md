@@ -216,6 +216,17 @@ They found a fault in AberrationCalculator's real ray trace, fixed in 3b20f5d. W
 | Optiland | as on the other lenses | the wavefront negated; negated back, 7×10⁻² wave |
 | LensHH-LT | 4.4×10⁻¹⁰ wave (1.8×10⁻⁸ aimed) | 2.0×10⁻¹⁰ wave (6.2×10⁻⁹ aimed) |
 
+## Decentred and tilted lenses (`PerturbedTests`)
+
+A tolerance analysis found a fault (2026-10-14) in `RealChief` on axis. A centred lens's on-axis chief ray is the axis, and E′ was the paraxial exit pupil only when the chief ray lay exactly along it. On a lens with an element decentred or tilted, the on-axis chief ray leaves the axis by micrometres and is inclined to it by 10⁻⁵ rad or so, so E′ became where it crosses the axis: anywhere along it. On a singlet with an element decentred 0.07 mm, the crossing fell on the image; the sphere's radius was 0.007 mm, most rays missed it and were counted vignetted, and W jumped between 1 and 24 waves from one 25 µm focus step to the next, where the right answer is a smooth 1.29 waves at best focus.
+
+On axis, E′ is now the paraxial exit pupil where the chief ray passes its plane: the axial point on a centred lens, as before, bit for bit, and a well-defined point near it on a perturbed one. Off axis nothing changed. The Cooke triplet with its last element decentred 50 µm and 20 µm and tilted 1′:
+
+| | Before | After |
+|---|---|---|
+| E′ on axis, from the image | −45.163 mm (the chief ray's crossing) | −53.766 mm, the nominal lens's |
+| The image moved onto the crossing (tilted 1′ only): rays arriving | 0 of 192 | 192 of 192 |
+
 ## OSLO (`OsloParityTests`)
 
 `tests/TestData/oslo` holds OSLO EDU 6.6's results for the five lenses, gathered by hand with a CCL macro kept outside this repository. They cover both ray aiming modes (`enp`, `crr`) and all three reference sphere positions (exit pupil, infinity, last surface): 30 files. The test traces OSLO's own (FY, FX), on OSLO's indices, with the switches `docs/programs.md` lists.
