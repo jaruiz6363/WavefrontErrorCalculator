@@ -1,9 +1,16 @@
 # WavefrontErrorCalculator
 
-WavefrontErrorCalculator (WEC) is a reference for deciding whether an optical design program's
-wavefront error is correct. Programs disagree about the OPD of the same lens, and agreement
-between two of them proves only that they are consistent: they can share a convention, or an
-error. WEC settles the question in two steps.
+WavefrontErrorCalculator (WEC) computes a lens's wavefront error, and the image quality that
+follows from it, from real rays. It began as a reference for deciding whether an optical design
+program's wavefront error is correct, and it is now also the wavefront and image-quality library
+under other modules:
+
+- [TolerancingModule](https://github.com/jaruiz6363/TolerancingModule) judges each perturbed lens
+  by WEC's RMS wavefront error, Zernike fits and geometric MTF.
+
+As a reference, it answers a question that comparing programs cannot. Programs disagree about the
+OPD of the same lens, and agreement between two of them proves only that they are consistent:
+they can share a convention, or an error. WEC settles the question in two steps.
 
 1. **It is shown to be right on its own,** without appeal to any other program: against cases
    with exact answers, against aberration theory, and against an independent method that reaches

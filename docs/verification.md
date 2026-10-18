@@ -295,3 +295,32 @@ Three things the table shows:
   - US8264785 at 17.5° under real-stop aiming is the extreme case. Just inside the upper rim of the real stop (Py ≈ 0.98), W climbs from 0.27 to 18 waves within 5% of the pupil radius, and the exit-area Jacobian grows with it. That points to a ray approaching grazing incidence on one of the lens's aspheres.
   - There, the integral itself moves by 4×10⁻² wave between 24 and 48 rings, and the square grid's exit-area RMS drifts away as the grid is refined (0.790 at 64², 0.810 at 256², 0.834 at 512²).
   - The paraxially aimed programs launch inside the paraxial pupil and never reach that zone.
+
+## Diffraction: the PSF and the MTF (`DiffractionTests`, `DiffractionMtfTests`, `GeometricMtfTests`)
+
+The PSF and the OTF rest on the Debye integral (method.md §11). The checks below test the computation of that integral from traced rays: the pupil function in spatial frequencies, its amplitude, the partners found by tracing, and the grid. None compares with another program. Each is against an exact answer or an independent route to the same quantity.
+
+**A perfect image.** A paraboloid at F/10 on axis, where W ≡ 0.
+- The MTF is the overlap of two circles of radius sin θ/λ, (2/π)(acos v − v√(1 − v²)). On a 256 grid it agrees to 1.6×10⁻⁴ from v = 0.1 to 0.9; the test asserts 2×10⁻³.
+- At three wavelengths weighted 1, 2 and 1, the polychromatic MTF is the weighted mean of each wavelength's overlap, with its own cutoff. On the default 128 grid it agrees to 1.1×10⁻³ from 20 to 150 cycles/mm.
+
+**A pure defocus, against Hopkins (1955).** Defocused by about one wave, the OTF is a one-dimensional integral over the pupils' overlap, evaluated here by quadrature.
+- The paraboloid is taken at F/50, where the pupil's apodization and the ρ⁴ part of the defocus are both of order sin²θ = 10⁻⁴.
+- The reference sphere's centre moves with the image plane. So the defocus coefficient is Δz(a/f)(a/R_Q)/(2λ), and the pupil's radius in spatial frequencies is a/(λR_Q), with R_Q = f − Δz. At F/50 this is a 12% correction, and without it the comparison fails.
+- The agreement is 6.5×10⁻⁴ on the 128 grid and 2×10⁻⁴ on a 256 grid, past the MTF's first zero.
+- At F/10 the residual stays near 10⁻³ at every grid. That residual is the sin²θ terms the analytic form leaves out, not discretization.
+
+**Two routes off axis.** On the Cooke triplet at 14°, where W spans 4 waves:
+- the OTF as the autocorrelation with traced partners;
+- the Fourier transform of the PSF summed directly from the Debye integral.
+
+They share only the traced rays. At 40 and 80 cycles/mm, sagittal and tangential, they agree to 5.1×10⁻⁴; the test asserts 3×10⁻³. The PSF holds 99.8% of its energy in the ±160 µm window summed.
+
+**The geometric limit.** With the wavelength reduced 100 times and the glass kept at the real one, the diffraction OTF tends to the geometric MTF. On the Cooke triplet, on axis and at 14°, from 10 to 40 cycles/mm, they agree within 0.0012. Kidger checked his own programs the same way. The geometric MTF sums where the rays land; the OTF autocorrelates the pupil function from the rays' optical paths.
+
+**The Fresnel number.** At F/10 and f = 100 mm it is 425, within 0.2% of R′ sin²θ/λ. A pupil a hundred times smaller has N_F < 1 and is flagged.
+
+**What these do not test.** Each is a limit of the Debye integral itself, stated in method.md §11:
+- **Polarization:** it is a scalar theory. Beyond a numerical aperture of about 0.6 the vector theory of Richards and Wolf (1959) is needed.
+- **The low-Fresnel-number regime:** there the focus moves toward the pupil (Li and Wolf 1981). It is flagged, not corrected.
+- **Illumination:** the pupil is lit uniformly in the launch coordinates. Apodization by coatings or a non-uniform source is not modelled.
