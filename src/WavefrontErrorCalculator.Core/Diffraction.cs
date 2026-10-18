@@ -118,74 +118,97 @@ public static class Diffraction
     /// outer integral over an n×n square grid of the pupil, each point's partner traced.
     /// </summary>
     public static OtfResult Otf(LensModel lens, int field, int wavelength, WavefrontOptions options, int grid,
-                                double nuX, double nuY)
+                                double nuX, double nuY) =>
+        new TracedPupil(lens, field, wavelength, options, grid).Otf(nuX, nuY);
+
+    /// <summary>
+    /// A pupil traced once on its grid, for the OTF at as many frequencies as wanted: the outer
+    /// integral's rays, with their q, phase and ∂q/∂P, are the same at every frequency.
+    /// </summary>
+    internal sealed class TracedPupil
     {
-        var pupil = new PupilMap(lens, field, wavelength, options);
-        var nodes = new Sampling.SquareGrid(grid).Points();
-        var rays = pupil.Trace(nodes.Select(p => (p.Px, p.Py)).ToArray(), transmission: true, jacobian: true);
-        var used = Enumerable.Range(0, rays.Length).Where(k => rays[k].Transmitted).ToArray();
-        int m = used.Length;
-        if (m == 0) throw new InvalidOperationException("no ray of the pupil transmits");
+        private readonly PupilMap _pupil;
+        private readonly IReadOnlyList<PupilPoint> _nodes;
+        private readonly PupilRay[] _rays;
+        private readonly int[] _used;
 
-        // Each point's partner: the pupil point whose q is q - ν. Iterated with the point's own
-        // ∂q/∂P (a chord method), from the first-order guess.
-        var target = new (double X, double Y)[m];
-        var at = new (double Px, double Py)[m];
-        var inverse = new (double A, double B, double C, double D)[m];
-        for (int i = 0; i < m; i++)
+        public TracedPupil(LensModel lens, int field, int wavelength, WavefrontOptions options, int grid)
         {
-            var r = rays[used[i]];
-            var p = nodes[used[i]];
-            target[i] = (r.Qx - nuX, r.Qy - nuY);
-            double det = r.Dqx_dPx * r.Dqy_dPy - r.Dqx_dPy * r.Dqy_dPx;
-            inverse[i] = (r.Dqy_dPy / det, -r.Dqx_dPy / det, -r.Dqy_dPx / det, r.Dqx_dPx / det);
-            at[i] = (p.Px - (inverse[i].A * nuX + inverse[i].B * nuY), p.Py - (inverse[i].C * nuX + inverse[i].D * nuY));
+            _pupil = new PupilMap(lens, field, wavelength, options);
+            _nodes = new Sampling.SquareGrid(grid).Points();
+            _rays = _pupil.Trace(_nodes.Select(p => (p.Px, p.Py)).ToArray(), transmission: true, jacobian: true);
+            _used = Enumerable.Range(0, _rays.Length).Where(k => _rays[k].Transmitted).ToArray();
+            if (_used.Length == 0) throw new InvalidOperationException("no ray of the pupil transmits");
         }
 
-        double scale = Math.Max(1.0, Math.Sqrt(nuX * nuX + nuY * nuY));
-        var done = new bool[m];
-        var lost = new bool[m];
-        var active = Enumerable.Range(0, m).ToList();
-        for (int iteration = 0; iteration < 40 && active.Count > 0; iteration++)
+        /// <summary>The transmitting rays' spatial frequencies, (qx, qy), cycles/mm.</summary>
+        public IEnumerable<(double Qx, double Qy)> Frequencies => _used.Select(k => (_rays[k].Qx, _rays[k].Qy));
+
+        public OtfResult Otf(double nuX, double nuY)
         {
-            var traced = pupil.Trace(active.Select(i => at[i]).ToArray(), transmission: false, jacobian: false);
-            var still = new List<int>();
-            for (int k = 0; k < active.Count; k++)
+            var (pupil, nodes, rays, used) = (_pupil, _nodes, _rays, _used);
+            int m = used.Length;
+
+            // Each point's partner: the pupil point whose q is q - ν. Iterated with the point's own
+            // ∂q/∂P (a chord method), from the first-order guess.
+            var target = new (double X, double Y)[m];
+            var at = new (double Px, double Py)[m];
+            var inverse = new (double A, double B, double C, double D)[m];
+            for (int i = 0; i < m; i++)
             {
-                int i = active[k];
-                var t = traced[k];
-                if (!t.Arrived) { lost[i] = true; continue; }
-                double ex = target[i].X - t.Qx, ey = target[i].Y - t.Qy;
-                if (Math.Sqrt(ex * ex + ey * ey) < 1e-10 * scale) { done[i] = true; continue; }
-                var (a, b, c, d) = inverse[i];
-                at[i] = (at[i].Px + a * ex + b * ey, at[i].Py + c * ex + d * ey);
-                // Far outside the pupil the partner cannot transmit; stop iterating it.
-                if (at[i].Px * at[i].Px + at[i].Py * at[i].Py > 4.0) { lost[i] = true; continue; }
-                still.Add(i);
+                var r = rays[used[i]];
+                var p = nodes[used[i]];
+                target[i] = (r.Qx - nuX, r.Qy - nuY);
+                double det = r.Dqx_dPx * r.Dqy_dPy - r.Dqx_dPy * r.Dqy_dPx;
+                inverse[i] = (r.Dqy_dPy / det, -r.Dqx_dPy / det, -r.Dqy_dPx / det, r.Dqx_dPx / det);
+                at[i] = (p.Px - (inverse[i].A * nuX + inverse[i].B * nuY), p.Py - (inverse[i].C * nuX + inverse[i].D * nuY));
             }
-            active = still;
-        }
-        int unsolved = active.Count;
 
-        // The partners inside the unit pupil, traced through the apertures with their own J.
-        var inside = Enumerable.Range(0, m)
-            .Where(i => done[i] && at[i].Px * at[i].Px + at[i].Py * at[i].Py <= 1.0).ToArray();
-        var partners = pupil.Trace(inside.Select(i => at[i]).ToArray(), transmission: true, jacobian: true);
+            double scale = Math.Max(1.0, Math.Sqrt(nuX * nuX + nuY * nuY));
+            var done = new bool[m];
+            var lost = new bool[m];
+            var active = Enumerable.Range(0, m).ToList();
+            for (int iteration = 0; iteration < 40 && active.Count > 0; iteration++)
+            {
+                var traced = pupil.Trace(active.Select(i => at[i]).ToArray(), transmission: false, jacobian: false);
+                var still = new List<int>();
+                for (int k = 0; k < active.Count; k++)
+                {
+                    int i = active[k];
+                    var t = traced[k];
+                    if (!t.Arrived) { lost[i] = true; continue; }
+                    double ex = target[i].X - t.Qx, ey = target[i].Y - t.Qy;
+                    if (Math.Sqrt(ex * ex + ey * ey) < 1e-10 * scale) { done[i] = true; continue; }
+                    var (a, b, c, d) = inverse[i];
+                    at[i] = (at[i].Px + a * ex + b * ey, at[i].Py + c * ex + d * ey);
+                    // Far outside the pupil the partner cannot transmit; stop iterating it.
+                    if (at[i].Px * at[i].Px + at[i].Py * at[i].Py > 4.0) { lost[i] = true; continue; }
+                    still.Add(i);
+                }
+                active = still;
+            }
+            int unsolved = active.Count;
 
-        double re = 0.0, im = 0.0;
-        int pairs = 0;
-        for (int k = 0; k < inside.Length; k++)
-        {
-            var b = partners[k];
-            if (!b.Transmitted) continue;
-            var a = rays[used[inside[k]]];
-            double weight = Math.Sqrt(a.Jacobian / b.Jacobian);
-            double phase = 2 * Math.PI * (a.Phase - b.Phase);
-            re += weight * Math.Cos(phase);
-            im += weight * Math.Sin(phase);
-            pairs++;
+            // The partners inside the unit pupil, traced through the apertures with their own J.
+            var inside = Enumerable.Range(0, m)
+                .Where(i => done[i] && at[i].Px * at[i].Px + at[i].Py * at[i].Py <= 1.0).ToArray();
+            var partners = pupil.Trace(inside.Select(i => at[i]).ToArray(), transmission: true, jacobian: true);
+
+            double re = 0.0, im = 0.0;
+            int pairs = 0;
+            for (int k = 0; k < inside.Length; k++)
+            {
+                var b = partners[k];
+                if (!b.Transmitted) continue;
+                var a = rays[used[inside[k]]];
+                double weight = Math.Sqrt(a.Jacobian / b.Jacobian);
+                double phase = 2 * Math.PI * (a.Phase - b.Phase);
+                re += weight * Math.Cos(phase);
+                im += weight * Math.Sin(phase);
+                pairs++;
+            }
+            return new OtfResult(re / m, im / m, pairs, m, unsolved);
         }
-        return new OtfResult(re / m, im / m, pairs, m, unsolved);
     }
 
     /// <summary>One traced pupil point in the image's spatial frequencies.</summary>

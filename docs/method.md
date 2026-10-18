@@ -442,6 +442,25 @@ How each program's data is obtained:
 - A paraboloid defocused by 1 mm at f/25, a uniform disc of blur: 2J₁(x)/x, x = 2πf r, within 0.003 up to x = 10 (Haines and King's Fig. 2, after Steel 1956). In focus, an MTF of 1 and a cutoff of 2 NA/λ to six figures.
 - **The limit of diffraction**, the check Kidger made of his own programs (Optica Acta 25, 665, 1978, §2.8), where he found 0.02: the diffraction OTF above, computed with the wavelength reduced 100 times and the glass kept at the real one, against the geometric MTF on the Cooke triplet - on axis and at 14°, sagittal and tangential, from 10 to 40 cycles/mm, with rays aimed at the paraxial pupil and at the real stop: within 0.0012. The two share only the traced rays: one sums where they land, the other autocorrelates the pupil function from their optical paths.
 
+### 11.2 Diffraction MTF over the wavelengths
+
+`DiffractionMtf` gives a field's diffraction MTF at a list of frequencies, sagittal (x) and tangential (y), from `Diffraction.Otf`. Each wavelength's pupil is traced once on its grid and reused for every frequency.
+
+- **Wavelengths.** MTF(ν) = |Σ w_λ OTF_λ(ν)| / Σ w_λ, the MTF of the weighted sum of the wavelengths' PSFs, each of unit energy.
+  - The OTFs are added as complex numbers. Under `PrimaryFocus` or `PrimarySphere` every wavelength is referred to the primary's image point, so the phases carry where each wavelength's image lies, and lateral color lowers the MTF.
+  - Under `OwnChief` it would not, and the result says so.
+  - Each wavelength has its own cutoff, n′·2 sin θ/λ.
+- **The chief ray.** The autocorrelation needs the pupil coordinates fixed to the stop. The vignetted pupil's centre (`VignettedCenter`, the reference default) is replaced by the stop's, with a note.
+- **The Fresnel number** N_F = a²/(λR′). Here a = R′ sin θ is the pupil's radius on the reference sphere, from the spread of the transmitting rays' spatial frequencies, n′ sin θ = λ₀|q − q̄|max. The Debye integral holds when N_F is large; below 10 the focus moves toward the pupil (Li and Wolf 1981), and the result is flagged.
+- **The grid.** The outer integral's n×n grid, 128 by default.
+- **A perfect lens's MTF** is reported beside it, circular or annular, with the beam's cutoffs, weighted over the wavelengths as `GeometricMtf` does.
+
+**Verified** (`DiffractionMtfTests`):
+- **A perfect image at three wavelengths,** weighted 1, 2 and 1 (a paraboloid at F/10): the weighted mean of each wavelength's circles' overlap, to 1.1×10⁻³ from 20 to 150 cycles/mm.
+- **A pure defocus of about one wave against Hopkins (1955)**, at F/50 so that apodization and the ρ⁴ part of the defocus are 10⁻⁴. The reference sphere's centre moves with the image plane, so the defocus is W₂₀ = Δz·(a/f)(a/R_Q)/(2λ) and the pupil's radius in spatial frequencies a/(λR_Q), R_Q = f − Δz. The OTF is (4/π) ∫₀^(1−s/2) √(1 − (x + s/2)²) cos(4πW₂₀ s x) dx. It agrees to 6.5×10⁻⁴ on the 128 grid and 2×10⁻⁴ on a 256 grid, past the first zero. At F/10 the two differ by up to 10⁻³, the terms of order sin²θ the formula leaves out.
+- **The Fresnel number** of the paraboloid at F/10, 425, within 0.2% of R′ sin²θ/λ; a pupil a hundred times smaller is flagged.
+- **One wavelength** of the Cooke triplet at 14° is `Diffraction.Otf`'s modulus exactly, the pupil traced once.
+
 ## 12. Known program behaviours (as found so far)
 
 The Optiland, Zemax and LensHH-LT columns have been confirmed at every field and wavelength (docs/verification.md, docs/programs.md):
