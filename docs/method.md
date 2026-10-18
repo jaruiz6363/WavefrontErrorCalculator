@@ -11,7 +11,7 @@ Programs disagree about the OPD of the same lens, and agreement between two of t
 1. **It is shown to be right on its own.** W is computed exactly as defined by H. H. Hopkins (1950, 1952, 1981) and W. T. Welford (1986), with every convention stated and every approximation either removed or labelled, and checked without appeal to any other program: against cases with exact answers and the small-aperture limit of aberration theory (§9.1), against internal consistency checks, and against an independent method, Rayces's exact relation integrated from the rays' directions alone (§3.4, §9.2).
 2. **Each program is then judged against it.** Every choice that makes optical design programs disagree is exposed as a switch, so WEC can compute W exactly as a program defines it. Matching LensHH-LT, Optiland, Zemax OpticStudio and OSLO identifies the conventions each uses (§10, §12). Under a program's own conventions, any difference that remains is an error in that program, not a matter of definition.
 
-Non-goals for v1: polarization, apodization (non-uniform pupil amplitude), diffraction-based PSF/MTF (W is produced in a form ready for them; see §11), non-sequential systems, gradient-index media.
+Non-goals for v1: polarization, apodization (non-uniform pupil amplitude), non-sequential systems, gradient-index media. The scalar diffraction PSF and MTF, computed from W, are in §11.
 
 ## 2. Sources
 
@@ -30,6 +30,17 @@ Non-goals for v1: polarization, apodization (non-uniform pupil amplitude), diffr
 | K68 | W. B. King, Appl. Opt. 7, 489 (1968) | Variance on the equivalent circular pupil |
 | S76 | R. N. Singh, Optica Acta 23, 621 (1976) | Correcting W from launch to exit-pupil coordinates (eq. 13) |
 | M71 | J. Macdonald, Optica Acta 18, 269 (1971) | Canonical coordinates in OTF work; exact defocus |
+| D09 | P. Debye, Ann. Phys. 335(14), 755 (1909), doi:10.1002/andp.19093351406 | The field near a focus as a superposition of plane waves (§11) |
+| W59 | E. Wolf, Proc. R. Soc. Lond. A 253, 349 (1959), doi:10.1098/rspa.1959.0199 | The Debye integral as the image field's integral representation |
+| RW59 | B. Richards and E. Wolf, Proc. R. Soc. Lond. A 253, 358 (1959), doi:10.1098/rspa.1959.0200 | The vector theory, needed at high aperture (a limit of §11) |
+| WL81 | E. Wolf and Y. Li, Opt. Commun. 39, 205 (1981), doi:10.1016/0030-4018(81)90107-3 | When the Debye integral holds: a large Fresnel number |
+| LW81 | Y. Li and E. Wolf, Opt. Commun. 39, 211 (1981), doi:10.1016/0030-4018(81)90108-5 | The focal shift when it does not |
+| H55 | H. H. Hopkins, Proc. R. Soc. Lond. A 231, 91 (1955), doi:10.1098/rspa.1955.0158 | The OTF as the pupil function's autocorrelation; the defocused OTF (§11.2's test) |
+| H57 | H. H. Hopkins, Proc. Phys. Soc. B 70, 1002 (1957), doi:10.1088/0370-1301/70/10/410 | The OTF's numerical evaluation by the autocorrelation |
+| Du83 | P.-M. Duffieux, *The Fourier Transform and Its Applications to Optics*, 2nd ed. (Wiley, 1983; French original 1946) | Image formation as a Fourier transform; the transfer function |
+| G05 | J. W. Goodman, *Introduction to Fourier Optics*, 3rd ed. (Roberts & Company, 2005), ch. 6 | The OTF of incoherent imaging as the normalized autocorrelation of the pupil function |
+| BW99 | M. Born and E. Wolf, *Principles of Optics*, 7th ed. (Cambridge, 1999), §8.8 | The light distribution near a focus |
+| St86 | J. J. Stamnes, *Waves in Focal Regions* (Adam Hilger, 1986) | Focusing and the Debye approximation at length |
 
 The papers are cited by these keys throughout.
 
@@ -418,9 +429,29 @@ How each program's data is obtained:
 
 ## 11. Diffraction reference
 
-`Diffraction` computes the PSF and the OTF directly from traced rays, without a fast Fourier transform's grids, as a reference for other programs' FFT results.
+`Diffraction` computes the PSF and the OTF directly from traced rays, without a fast Fourier transform's grids. It serves as a reference for other programs' FFT results, and as the diffraction MTF of the modules built on WEC.
 
-- **The pupil function in spatial frequencies.** Each ray's point B′ on the exit reference sphere gives the unit vector u from B′ to the sphere's centre Q′, and q = n′u⊥/λ, u⊥ its part in the image plane. The amplitude at Q′ + Δ is the Debye integral U(Δ) = ∫ P(q) e^{2πi q·Δ} d²q, a Fourier transform; the PSF is |U|² and the OTF the autocorrelation of P (Goodman 2005 §6.3; Born & Wolf §8.8).
+**The Debye integral.** The field the lens delivers is known on its exit reference sphere: of radius R′, centred on the image point Q′, with amplitude A and phase −2πW at each ray's point B′. The field at a point Q′ + Δ near the focus is the Huygens-Fresnel integral over that sphere, each element contributing e^{ik′s}/s, s its distance from Q′ + Δ, k′ = 2πn′/λ. Debye (D09) made two approximations, valid when Δ is small against R′ (W59; BW99 §8.8):
+- **In the phase,** s ≈ R′ − u·Δ, u the unit vector from B′ to Q′.
+- **In the amplitude and the obliquity factor,** s ≈ R′.
+
+The field then becomes a superposition of plane waves, one for each direction u in the cone the pupil subtends:
+
+  U(Δ) ∝ ∫ A(u) e^{−2πiW(u)} e^{ik′u·Δ} dΩ.
+
+In the image plane, written in the spatial frequencies q = n′u⊥/λ (u⊥ the part of u in the plane), it is a two-dimensional Fourier transform, U(Δ) = ∫ P(q) e^{2πi q·Δ} d²q. Here P is the pupil function in those coordinates, zero outside the cone the lens transmits. The PSF is |U|².
+
+- **The OTF.** By the autocorrelation theorem, the OTF, the PSF's Fourier transform normalized at zero frequency, is the normalized autocorrelation of P (Du83; H55; H57; G05 ch. 6):
+
+  OTF(ν) = ∫ P(q) P*(q − ν) d²q / ∫ |P|² d²q.
+
+  The shift is exactly ν, in cycles per unit length of the image plane, at every field and in every azimuth. An off-axis pencil's anamorphism, the obliquity of its directions to the plane, and the outline vignetting cuts all appear in the shape of P's support in q. The tracing finds that shape, so no rescaling of the frequency axis is needed. Canonical coordinates (H64; M71) are the same information normalized to a unit circle.
+- **The amplitude** is fixed by energy, below.
+- **When it holds.** The Debye integral needs a large Fresnel number, N_F = a²/(λR′) with a the pupil's radius on the sphere, and Δ small against R′ (WL81; St86). As N_F falls toward 10 and below, the true focus moves toward the pupil, away from Q′ (LW81), and the Debye field departs from the Huygens-Fresnel field. Practical imaging lenses have N_F in the hundreds or thousands.
+- **It is a scalar theory.** At high numerical aperture the field's polarization matters, and the vector form of the integral is needed (RW59). That is outside WEC (§1).
+
+**How it is computed.**
+- **The pupil function in spatial frequencies.** Each traced ray's point B′ on the exit reference sphere gives u, the unit vector from B′ to Q′, and its q = n′u⊥/λ; its W gives the phase.
 - **Illumination.** The pupil is lit uniformly in (Px, Py), as in every program compared. A ray tube carries the energy of dPx dPy to d²q = J dPx dPy, J = |∂q/∂(Px, Py)| from differential rays, so P = J^(−1/2) e^{−2πiW}. No step assumes the map from (Px, Py) to q to be linear or the pupil to be round.
 - **PSF.** The Debye integral summed over an n×n square grid of (Px, Py), at any points of the image plane, or of another plane through Q′ (such as the one perpendicular to the chief ray). It integrates to 1 over the plane.
 - **OTF.** At frequency ν, each transmitting pupil point is paired with the point whose q is q − ν. That point is found by iterating rays onto it, and whether it transmits by tracing it through the apertures, so the only discretisation is the outer sum over the grid.
@@ -441,6 +472,25 @@ How each program's data is obtained:
 - The sum on a point (1) and on two points (|cos πfd|); the perfect lens's MTF against Haines and King's Table I (Proc. SPIE 13, 105, 1968) and an annulus's against its directly counted autocorrelation.
 - A paraboloid defocused by 1 mm at f/25, a uniform disc of blur: 2J₁(x)/x, x = 2πf r, within 0.003 up to x = 10 (Haines and King's Fig. 2, after Steel 1956). In focus, an MTF of 1 and a cutoff of 2 NA/λ to six figures.
 - **The limit of diffraction**, the check Kidger made of his own programs (Optica Acta 25, 665, 1978, §2.8), where he found 0.02: the diffraction OTF above, computed with the wavelength reduced 100 times and the glass kept at the real one, against the geometric MTF on the Cooke triplet - on axis and at 14°, sagittal and tangential, from 10 to 40 cycles/mm, with rays aimed at the paraxial pupil and at the real stop: within 0.0012. The two share only the traced rays: one sums where they land, the other autocorrelates the pupil function from their optical paths.
+
+### 11.2 Diffraction MTF over the wavelengths
+
+`DiffractionMtf` gives a field's diffraction MTF at a list of frequencies, sagittal (x) and tangential (y), from `Diffraction.Otf`. Each wavelength's pupil is traced once on its grid and reused for every frequency.
+
+- **Wavelengths.** MTF(ν) = |Σ w_λ OTF_λ(ν)| / Σ w_λ, the MTF of the weighted sum of the wavelengths' PSFs, each of unit energy.
+  - The OTFs are added as complex numbers. Under `PrimaryFocus` or `PrimarySphere` every wavelength is referred to the primary's image point, so the phases carry where each wavelength's image lies, and lateral color lowers the MTF.
+  - Under `OwnChief` it would not, and the result says so.
+  - Each wavelength has its own cutoff, n′·2 sin θ/λ.
+- **The chief ray.** The autocorrelation needs the pupil coordinates fixed to the stop. The vignetted pupil's centre (`VignettedCenter`, the reference default) is replaced by the stop's, with a note.
+- **The Fresnel number** N_F = a²/(λR′). Here a = R′ sin θ is the pupil's radius on the reference sphere, from the spread of the transmitting rays' spatial frequencies, n′ sin θ = λ₀|q − q̄|max. The Debye integral holds when N_F is large; below 10 the focus moves toward the pupil (Li and Wolf 1981), and the result is flagged.
+- **The grid.** The outer integral's n×n grid, 128 by default.
+- **A perfect lens's MTF** is reported beside it, circular or annular, with the beam's cutoffs, weighted over the wavelengths as `GeometricMtf` does.
+
+**Verified** (`DiffractionMtfTests`):
+- **A perfect image at three wavelengths,** weighted 1, 2 and 1 (a paraboloid at F/10): the weighted mean of each wavelength's circles' overlap, to 1.1×10⁻³ from 20 to 150 cycles/mm.
+- **A pure defocus of about one wave against Hopkins (1955)**, at F/50 so that apodization and the ρ⁴ part of the defocus are 10⁻⁴. The reference sphere's centre moves with the image plane, so the defocus is W₂₀ = Δz·(a/f)(a/R_Q)/(2λ) and the pupil's radius in spatial frequencies a/(λR_Q), R_Q = f − Δz. The OTF is (4/π) ∫₀^(1−s/2) √(1 − (x + s/2)²) cos(4πW₂₀ s x) dx. It agrees to 6.5×10⁻⁴ on the 128 grid and 2×10⁻⁴ on a 256 grid, past the first zero. At F/10 the two differ by up to 10⁻³, the terms of order sin²θ the formula leaves out.
+- **The Fresnel number** of the paraboloid at F/10, 425, within 0.2% of R′ sin²θ/λ; a pupil a hundred times smaller is flagged.
+- **One wavelength** of the Cooke triplet at 14° is `Diffraction.Otf`'s modulus exactly, the pupil traced once.
 
 ## 12. Known program behaviours (as found so far)
 
