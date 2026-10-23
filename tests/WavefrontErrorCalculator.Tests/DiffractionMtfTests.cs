@@ -8,26 +8,32 @@ namespace WavefrontErrorCalculator.Tests;
 
 /// <summary>
 /// The diffraction MTF over a lens's wavelengths (method.md §11.2) against what is known exactly: a perfect image
-/// at several wavelengths, a pure defocus (Hopkins 1955), and the Fresnel number.
+/// at several wavelengths, through a central obscuration (O'Neill 1956), a pure defocus (Hopkins 1955), and the
+/// Fresnel number.
 /// </summary>
 public class DiffractionMtfTests(Xunit.Abstractions.ITestOutputHelper log)
 {
     private const double F = 100.0, R = 5.0;
 
     /// <summary>A paraboloid, f = 100 mm at F/10, on axis: W ≡ 0 at every wavelength.</summary>
-    private static LensModel Paraboloid(double epd = 2 * R, params (double Um, double Weight)[] waves)
+    private static LensModel Paraboloid(double epd = 2 * R, params (double Um, double Weight)[] waves) =>
+        Paraboloid(epd, 0.0, waves);
+
+    /// <summary>
+    /// The paraboloid behind a central obscuration of <paramref name="obscuration"/> times the pupil's radius, on a
+    /// plane at its vertex, where the beam is still the entrance pupil's size.
+    /// </summary>
+    internal static LensModel Paraboloid(double epd, double obscuration, params (double Um, double Weight)[] waves)
     {
         var sys = new OpticalSystem { Aperture = new Aperture(ApertureType.EPD, epd), FieldType = FieldType.ObjectAngle };
         if (waves.Length == 0) waves = new[] { (0.5876, 1.0) };
         for (int i = 0; i < waves.Length; i++) sys.Wavelengths.Add(new Wavelength(waves[i].Um, waves[i].Weight, i == 0));
         sys.Fields.Add(new Field(0.0));
-        var surfaces = new[]
-        {
-            new Surface { Thickness = double.PositiveInfinity },
-            new Surface { Curvature = -1.0 / (2 * F), Conic = -1.0, Thickness = -F, Material = "MIRROR", IsStop = true },
-            new Surface(),
-        };
-        for (int i = 0; i < surfaces.Length; i++) surfaces[i].Index = i;
+        var surfaces = new List<Surface> { new Surface { Thickness = double.PositiveInfinity } };
+        if (obscuration > 0.0) surfaces.Add(new Surface { ObscurationRadius = obscuration * epd / 2 });
+        surfaces.Add(new Surface { Curvature = -1.0 / (2 * F), Conic = -1.0, Thickness = -F, Material = "MIRROR", IsStop = true });
+        surfaces.Add(new Surface());
+        for (int i = 0; i < surfaces.Count; i++) surfaces[i].Index = i;
         sys.Surfaces.AddRange(surfaces);
         return new LensModel(sys, CatalogLocator.LoadBundled());
     }
@@ -57,6 +63,26 @@ public class DiffractionMtfTests(Xunit.Abstractions.ITestOutputHelper log)
         Assert.InRange(r.Mtf[0].Tangential - expected, -3e-3, 3e-3);
         Assert.InRange(r.DiffractionLimit[0].Sagittal - expected, -1e-3, 1e-3);
         Assert.Equal(0, r.Unsolved);
+    }
+
+    /// <summary>
+    /// A perfect image through a central obscuration of a third of the pupil's radius: the annulus's MTF (O'Neill
+    /// 1956). The chief ray, down the axis, is stopped by the obscuration, and is still the reference.
+    /// </summary>
+    [Theory]
+    [InlineData(20.0)]
+    [InlineData(60.0)]
+    [InlineData(110.0)]
+    [InlineData(150.0)]
+    public void A_perfect_image_through_a_central_obscuration(double nu)
+    {
+        const double lambda = 0.5876, e = 1.0 / 3.0;
+        var lens = Paraboloid(2 * R, e, (lambda, 1.0));
+        var r = DiffractionMtf.Compute(lens, 0, new[] { nu }, WavefrontOptions.Reference, new DiffractionMtfOptions { Grid = 128 });
+        double expected = GeometricMtf.DiffractionLimit(nu, 2 * Sine() / (lambda * 1e-3), e);
+        log.WriteLine($"ν = {nu}: MTF S {r.Mtf[0].Sagittal:F5} T {r.Mtf[0].Tangential:F5} against {expected:F5}");
+        Assert.InRange(r.Mtf[0].Sagittal - expected, -3e-3, 3e-3);
+        Assert.InRange(r.Mtf[0].Tangential - expected, -3e-3, 3e-3);
     }
 
     /// <summary>

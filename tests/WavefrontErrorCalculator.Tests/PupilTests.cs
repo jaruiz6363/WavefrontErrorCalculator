@@ -118,6 +118,29 @@ public class PupilTests
         public override IReadOnlyList<PupilPoint> Points() => new[] { Point };
     }
 
+    /// <summary>
+    /// A central obscuration stops the pupil's centre, and the chief ray with it. The explored pupil is still the
+    /// whole annulus about the axis, not the part of it on one side of the hole; the chief ray is traced past the
+    /// obscuration as the reference; and the samples in the hole are left out.
+    /// </summary>
+    [Fact]
+    public void ACentralObscurationLeavesTheAnnulusAndTheChiefRay()
+    {
+        var lens = DiffractionMtfTests.Paraboloid(10.0, 0.3);
+        var o = WavefrontOptions.Reference;
+        var pupil = WavefrontCalculator.Explore(lens, 0.0, o);
+        Assert.Equal(1.0, pupil.Upper, 9);
+        Assert.Equal(-1.0, pupil.Lower, 9);
+        Assert.Equal(0.0, pupil.CenterPy, 9);
+        Assert.Equal(1.0, pupil.SemiX, 9);
+
+        var r = WavefrontCalculator.Compute(lens, 0, lens.PrimaryWavelength, o, new Sampling.SquareGrid(32));
+        Assert.Equal(0.0, r.Geometry.ChiefLaunchPy, 9);
+        Assert.All(r.Samples.Where(s => s.Px * s.Px + s.Py * s.Py < 0.25 * 0.25), s => Assert.True(s.Vignetted));
+        Assert.All(r.Samples.Where(s => s.Px * s.Px + s.Py * s.Py is > 0.35 * 0.35 and < 0.95), s => Assert.False(s.Vignetted));
+        Assert.True(r.Statistics.Rms < 1e-6, $"RMS {r.Statistics.Rms:E3} waves for a perfect image");
+    }
+
     [Fact]
     public void ZernikeFitsOfTheVignettedPencilWarnUnlessCanonical()
     {

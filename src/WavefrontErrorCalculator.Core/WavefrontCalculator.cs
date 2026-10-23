@@ -36,7 +36,9 @@ public static class WavefrontCalculator
             ? Explore(lens, f, options, warnings)
             : PupilDomain.Whole;
 
-        var chief = TraceAt(lens, f, wavelength, ChiefOptions(options), 0.0, pupil.CenterPy, shift, clip: true, warnings);
+        // The chief ray is the reference, not a sample: traced without the apertures, as the primary
+        // wavelength's is, so that a central obscuration in its way does not stop it.
+        var chief = TraceAt(lens, f, wavelength, ChiefOptions(options), 0.0, pupil.CenterPy, shift, clip: false, warnings);
         if (!chief.Ok) throw new InvalidOperationException($"the chief ray of field {field} does not reach the image");
 
         var points = sampling.Points();
@@ -331,17 +333,25 @@ public static class WavefrontCalculator
             return inside;
         }
 
-        double start = 0.0;
+        // When the pupil's centre is stopped, the rim is searched from the outermost rays that pass:
+        // a central obscuration leaves an annulus, whose rim is outside the hole on both sides.
+        double top = 0.0, bottom = 0.0;
         if (!Passes(0.0, 0.0))
         {
             var found = Enumerable.Range(0, 41).Select(k => -1.0 + k / 20.0).Where(v => Passes(0.0, v)).ToList();
             if (found.Count == 0) throw new InvalidOperationException("no ray of this field passes the lens");
-            start = found[found.Count / 2];
+            (top, bottom) = (found[^1], found[0]);
         }
-        double upper = Limit(start, 1.0, v => Passes(0.0, v));
-        double lower = Limit(start, -1.0, v => Passes(0.0, v));
+        double upper = Limit(top, 1.0, v => Passes(0.0, v));
+        double lower = Limit(bottom, -1.0, v => Passes(0.0, v));
         double center = 0.5 * (upper + lower);
-        double side = Limit(0.0, 1.0, u => Passes(u, center));
+        double across = 0.0;
+        if (!Passes(0.0, center))
+        {
+            var found = Enumerable.Range(1, 20).Select(k => k / 20.0).Where(u => Passes(u, center)).ToList();
+            across = found.Count > 0 ? found[^1] : double.NaN;
+        }
+        double side = double.IsNaN(across) ? 0.5 * (upper - lower) : Limit(across, 1.0, u => Passes(u, center));
         return new PupilDomain(center, side, 0.5 * (upper - lower), upper, lower);
     }
 
