@@ -185,6 +185,8 @@ When the pupil is in front of the object, or the object is at infinity, the two 
 The rim limits also define the pupil-domain ellipse (K68), which is used for canonical normalization (§3.2) and to place sample points.
 
 - **Which wavelength:** the pupil is explored at the primary wavelength, so a pupil coordinate names the same rays at every wavelength.
+- **A central obscuration:** when the pupil's centre is stopped, the limits are searched from the outermost rays that pass, so the explored pupil is the annulus's outer rim, centred on the axis, not the part of the annulus on one side of the hole.
+- **The chief ray is the reference, not a sample:** it is traced without the apertures, so an obscuration in its way, as in a Cassegrain, does not stop it. The samples are still clipped.
 - **Ellipse fit:** the ellipse passes through the rim's extreme points. A pencil cut by two apertures can be a "cat's eye", pointed at top and bottom, which the ellipse overshoots there. Rays in the overshoot are stopped and left out like any vignetted ray; only the sampling is a little less efficient.
 
 **Which apertures stop rays (`Apertures`):**
